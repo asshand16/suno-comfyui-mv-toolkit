@@ -121,6 +121,21 @@ CreateList 一個最多 10 個輸入，所以每 9 段一組再合併（最多 9
 - **解析度**：Resolution Selector 預設 megapixels 0.3（736×416）；要更清楚改 0.6（1056×608）或 0.98（1344×768），會慢很多
 - **Turbo**：預設 8 步；關掉 = 20 步，畫質好一些，約慢 2.5 倍
 
+### 5b.（選用）對嘴段落
+
+挑幾段讓人物對著鏡頭唱，嘴型跟著歌聲動：
+
+```
+pip install demucs
+python build_lipsync_workflow.py projects/我的歌 --shots 9,14,20,22 --face 臉部特寫.png --body 全身.png --singer "the woman"
+```
+
+- 用 MiniMax H3 **ref2va** 模型（`minimax_h3_ref2va_pruned_int8_convrot.safetensors`）和 Turbo LoRA（`minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors`）
+- 參考圖固定人物長相；整首人聲用 Demucs 分離，每段自動切出那 10 秒，用 `MiniMaxH3AddGuide` 錨定在第 0 格
+- 產生 `<歌名>_對嘴_MiniMaxH3_本機.json`，`lip_no` 選第幾個對嘴段，起點、段落編號、提示詞、檔名都會自動帶出
+- 輸出和一般片段同一個資料夾（`shot_XX_000NN_.mp4`），剪輯時自動用編號最新的版本，所以對嘴版會取代原本那段
+- 某段想自己寫對嘴提示詞：在 `分鏡設定.json` 那段加 `"lipsync_prompt": "..."`
+
 ### 6. 剪成 MV
 
 ```
@@ -144,6 +159,8 @@ python assemble_mv.py --project projects/我的歌 --subs                       
 | `write_prompts.py` | 分鏡設定 → 英文提示詞 |
 | `build_workflow.py` | shots.json → ComfyUI 工作流程 |
 | `assemble_mv.py` | 生成的片段 + 原曲 → 完整 MV |
+| `build_lipsync_workflow.py` | 指定段落 → 對嘴版 ComfyUI 工作流程（H3 ref2va + 人聲錨定） |
+| `templates/object_info_lipsync.json` | 對嘴工作流程用到的節點定義快照（連不到 ComfyUI 時使用） |
 | `templates/MiniMaxH3_本機_範本.json` | ComfyUI 工作流程範本（全部內建節點） |
 | `examples/汪洋/` | 完整範例（不含音樂和影片） |
 

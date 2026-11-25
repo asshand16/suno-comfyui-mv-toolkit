@@ -11,3 +11,5 @@
 projects/
 __pycache__/
 *.pyc
+stems/
+lipsync_api.json
