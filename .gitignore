@@ -1,0 +1,13 @@
+# 音樂與影片不放進版本庫
+*.mp3
+*.wav
+*.m4a
+*.flac
+*.mp4
+*.mov
+*.webm
+
+# 個人專案資料夾
+projects/
+__pycache__/
+*.pyc

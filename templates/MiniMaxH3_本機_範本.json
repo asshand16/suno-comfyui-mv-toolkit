@@ -1,0 +1,3860 @@
+{
+ "id": "31bbb224-7ac2-57af-ad18-5f030d96aa0d",
+ "revision": 0,
+ "last_node_id": 127,
+ "last_link_id": 68,
+ "nodes": [
+  {
+   "id": 1,
+   "type": "MarkdownNote",
+   "pos": [
+    -2600,
+    -40
+   ],
+   "size": [
+    760,
+    1080
+   ],
+   "flags": {},
+   "order": 0,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "## 《汪洋》MV｜MiniMax H3 本機分段生成（27 段）\n\n**整首 3:58 切成 27 段，每段生成 10 秒，剪輯時修到對齊節拍的長度。全部節點都是 ComfyUI 內建節點，不用點數、不用自訂節點。**\n\n### 第一次使用\n1. 更新 ComfyUI 到最新版（需要內建的 MiniMax H3 節點）\n2. 下載模型放到 `ComfyUI/models/` 對應資料夾（右邊「模型下載」便條有連結；載入時也會跳出缺少模型的下載視窗）\n3. **先測 1 段**：`clip_no` 設成 **1**，按 **Run** 一次。看看花多久、畫面對不對\n\n### 一次排完剩下 26 段\n4. 測完後 `clip_no` 會自動變成 **2**（因為設定成 increment）\n5. 把 Run 按鈕旁的**批次數量改成 26**，按一次 Run，會自動排好第 2～27 段，一段一段跑\n6. 成品存在 `ComfyUI/output/wangyang_mv/shot_01_00001_.mp4` … `shot_27_…mp4`\n\n### 某段不滿意，想重抽\n- `clip_no` 設成那段的編號，`reroll` 加 1（換種子），批次數量 1，Run\n\n### 速度／顯存\n- **Turbo（8 步）預設開啟**；關掉 = 20 步，畫質較好，但大約慢 2.5 倍\n- 太慢或顯存不夠：把 Resolution Selector 的 megapixels 從 **0.98**（1344×768）改成 **0.6**（1056×608）或 **0.4**（864×480）\n- 生成的影片會自帶 AI 音效，剪輯時會整段換成原曲\n\n### 剪成整首 MV\n- 27 段跑完後，用工具包裡的 `assemble_mv.py` 合成（需要 ffmpeg），或把 27 個檔案傳給 Claude 剪\n"
+   ],
+   "title": "使用說明（先看這裡）",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 2,
+   "type": "MarkdownNote",
+   "pos": [
+    -1760,
+    -40
+   ],
+   "size": [
+    700,
+    420
+   ],
+   "flags": {},
+   "order": 1,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "MarkdownNote"
+   },
+   "widgets_values": [
+    "## 模型下載\n\n- `diffusion_models/` ← [minimax_h3_fl2va_pruned_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors)\n- `text_encoders/` ← [qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors)\n- `vae/` ← [minimax_h3_video_vae_int8_convrot.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors)\n- `vae/` ← [minimax_h3_audio_vae_fp32.safetensors](https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors)\n- `loras/` ← [minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors](https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors)\n\n模型合計約 39 GB。Turbo LoRA 來自 lightx2v，其餘來自 [Comfy-Org/MiniMax-H3](https://huggingface.co/Comfy-Org/MiniMax-H3)。\n\n授權：MiniMax H3 Community License（美國、歐盟、英國、韓國不在授權範圍內；商用請先看授權條款）。"
+   ],
+   "title": "模型下載",
+   "color": "#432",
+   "bgcolor": "#653"
+  },
+  {
+   "id": 10,
+   "type": "UNETLoader",
+   "pos": [
+    -1760,
+    470
+   ],
+   "size": [
+    560,
+    90
+   ],
+   "flags": {},
+   "order": 2,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "unet_name",
+     "name": "unet_name",
+     "type": "COMBO",
+     "link": null,
+     "widget": {
+      "name": "unet_name"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "MODEL",
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      1,
+      2
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "UNETLoader",
+    "models": [
+     {
+      "name": "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+      "directory": "diffusion_models"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_fl2va_pruned_int8_convrot.safetensors",
+    "default"
+   ]
+  },
+  {
+   "id": 11,
+   "type": "CLIPLoader",
+   "pos": [
+    -1760,
+    600
+   ],
+   "size": [
+    560,
+    110
+   ],
+   "flags": {},
+   "order": 3,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "clip_name",
+     "name": "clip_name",
+     "type": "COMBO",
+     "link": null,
+     "widget": {
+      "name": "clip_name"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "CLIP",
+     "name": "CLIP",
+     "type": "CLIP",
+     "links": [
+      45
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CLIPLoader",
+    "models": [
+     {
+      "name": "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/text_encoders/qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+      "directory": "text_encoders"
+     }
+    ]
+   },
+   "widgets_values": [
+    "qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors",
+    "minimax",
+    "default"
+   ]
+  },
+  {
+   "id": 12,
+   "type": "VAELoader",
+   "pos": [
+    -1760,
+    750
+   ],
+   "size": [
+    560,
+    60
+   ],
+   "flags": {},
+   "order": 4,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "vae_name",
+     "name": "vae_name",
+     "type": "COMBO",
+     "link": null,
+     "widget": {
+      "name": "vae_name"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "VAE",
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      46,
+      62
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "minimax_h3_video_vae_int8_convrot.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_video_vae_int8_convrot.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_video_vae_int8_convrot.safetensors"
+   ],
+   "title": "Load VAE (video)"
+  },
+  {
+   "id": 13,
+   "type": "VAELoader",
+   "pos": [
+    -1760,
+    850
+   ],
+   "size": [
+    560,
+    60
+   ],
+   "flags": {},
+   "order": 5,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "vae_name",
+     "name": "vae_name",
+     "type": "COMBO",
+     "link": null,
+     "widget": {
+      "name": "vae_name"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "VAE",
+     "name": "VAE",
+     "type": "VAE",
+     "links": [
+      64
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "VAELoader",
+    "models": [
+     {
+      "name": "minimax_h3_audio_vae_fp32.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/vae/minimax_h3_audio_vae_fp32.safetensors",
+      "directory": "vae"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_audio_vae_fp32.safetensors"
+   ],
+   "title": "Load VAE (audio)"
+  },
+  {
+   "id": 14,
+   "type": "LoraLoaderModelOnly",
+   "pos": [
+    -1760,
+    950
+   ],
+   "size": [
+    560,
+    90
+   ],
+   "flags": {},
+   "order": 6,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "model",
+     "name": "model",
+     "type": "MODEL",
+     "link": 1
+    },
+    {
+     "localized_name": "lora_name",
+     "name": "lora_name",
+     "type": "COMBO",
+     "link": null,
+     "widget": {
+      "name": "lora_name"
+     }
+    },
+    {
+     "localized_name": "strength_model",
+     "name": "strength_model",
+     "type": "FLOAT",
+     "link": null,
+     "widget": {
+      "name": "strength_model"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "MODEL",
+     "name": "MODEL",
+     "type": "MODEL",
+     "links": [
+      3
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "LoraLoaderModelOnly",
+    "models": [
+     {
+      "name": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "url": "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "directory": "loras"
+     }
+    ]
+   },
+   "widgets_values": [
+    "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+    1
+   ],
+   "title": "Turbo LoRA (8 steps)"
+  },
+  {
+   "id": 15,
+   "type": "PrimitiveBoolean",
+   "pos": [
+    -1120,
+    470
+   ],
+   "size": [
+    300,
+    60
+   ],
+   "flags": {},
+   "order": 7,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "BOOLEAN",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "BOOLEAN",
+     "name": "BOOLEAN",
+     "type": "BOOLEAN",
+     "links": [
+      4,
+      7
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveBoolean"
+   },
+   "widgets_values": [
+    true
+   ],
+   "title": "Turbo 開關（開 = 8 步）",
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 16,
+   "type": "PrimitiveInt",
+   "pos": [
+    -1120,
+    580
+   ],
+   "size": [
+    300,
+    82
+   ],
+   "flags": {},
+   "order": 8,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "INT",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      5
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    20,
+    "fixed"
+   ],
+   "title": "步數（Turbo 關）"
+  },
+  {
+   "id": 17,
+   "type": "PrimitiveInt",
+   "pos": [
+    -1120,
+    700
+   ],
+   "size": [
+    300,
+    82
+   ],
+   "flags": {},
+   "order": 9,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "INT",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      6
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    8,
+    "fixed"
+   ],
+   "title": "步數（Turbo 開）"
+  },
+  {
+   "id": 18,
+   "type": "ComfySwitchNode",
+   "pos": [
+    -1120,
+    820
+   ],
+   "size": [
+    300,
+    80
+   ],
+   "flags": {},
+   "order": 10,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "on_false",
+     "name": "on_false",
+     "type": "MODEL",
+     "link": 2
+    },
+    {
+     "localized_name": "on_true",
+     "name": "on_true",
+     "type": "MODEL",
+     "link": 3
+    },
+    {
+     "localized_name": "switch",
+     "name": "switch",
+     "type": "BOOLEAN",
+     "link": 4,
+     "widget": {
+      "name": "switch"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "output",
+     "name": "output",
+     "type": "MODEL",
+     "links": [
+      52,
+      54
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ComfySwitchNode"
+   },
+   "widgets_values": [
+    true
+   ],
+   "title": "If/Else Switch (Model)"
+  },
+  {
+   "id": 19,
+   "type": "ComfySwitchNode",
+   "pos": [
+    -1120,
+    940
+   ],
+   "size": [
+    300,
+    80
+   ],
+   "flags": {},
+   "order": 11,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "on_false",
+     "name": "on_false",
+     "type": "INT",
+     "link": 5
+    },
+    {
+     "localized_name": "on_true",
+     "name": "on_true",
+     "type": "INT",
+     "link": 6
+    },
+    {
+     "localized_name": "switch",
+     "name": "switch",
+     "type": "BOOLEAN",
+     "link": 7,
+     "widget": {
+      "name": "switch"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "output",
+     "name": "output",
+     "type": "INT",
+     "links": [
+      53
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ComfySwitchNode"
+   },
+   "widgets_values": [
+    true
+   ],
+   "title": "If/Else Switch (Steps)"
+  },
+  {
+   "id": 20,
+   "type": "PrimitiveInt",
+   "pos": [
+    -2580,
+    1200
+   ],
+   "size": [
+    360,
+    82
+   ],
+   "flags": {},
+   "order": 12,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "INT",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      8,
+      9,
+      11
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    1,
+    "increment"
+   ],
+   "title": "clip_no",
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 21,
+   "type": "PrimitiveInt",
+   "pos": [
+    -2580,
+    1320
+   ],
+   "size": [
+    360,
+    82
+   ],
+   "flags": {},
+   "order": 13,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "INT",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      10
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveInt"
+   },
+   "widgets_values": [
+    0,
+    "fixed"
+   ],
+   "title": "reroll（重抽時 +1）",
+   "color": "#322",
+   "bgcolor": "#533"
+  },
+  {
+   "id": 22,
+   "type": "ComfyMathExpression",
+   "pos": [
+    -2160,
+    1200
+   ],
+   "size": [
+    340,
+    130
+   ],
+   "flags": {},
+   "order": 14,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "values.a",
+     "name": "values.a",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": 8,
+     "label": "a"
+    },
+    {
+     "localized_name": "values.b",
+     "name": "values.b",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": null,
+     "shape": 7,
+     "label": "b"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "FLOAT",
+     "name": "FLOAT",
+     "type": "FLOAT",
+     "links": null
+    },
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      44
+     ]
+    },
+    {
+     "localized_name": "BOOL",
+     "name": "BOOL",
+     "type": "BOOLEAN",
+     "links": null
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ComfyMathExpression"
+   },
+   "widgets_values": [
+    "max(0, min(26, a - 1))"
+   ],
+   "title": "分鏡索引 (clip_no-1)"
+  },
+  {
+   "id": 23,
+   "type": "ComfyMathExpression",
+   "pos": [
+    -2160,
+    1370
+   ],
+   "size": [
+    340,
+    150
+   ],
+   "flags": {},
+   "order": 15,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "values.a",
+     "name": "values.a",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": 9,
+     "label": "a"
+    },
+    {
+     "localized_name": "values.b",
+     "name": "values.b",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": 10,
+     "shape": 7,
+     "label": "b"
+    },
+    {
+     "localized_name": "values.c",
+     "name": "values.c",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": null,
+     "shape": 7,
+     "label": "c"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "FLOAT",
+     "name": "FLOAT",
+     "type": "FLOAT",
+     "links": null
+    },
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      51
+     ]
+    },
+    {
+     "localized_name": "BOOL",
+     "name": "BOOL",
+     "type": "BOOLEAN",
+     "links": null
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ComfyMathExpression"
+   },
+   "widgets_values": [
+    "20261125 + a * 1000 + b"
+   ],
+   "title": "種子 seed"
+  },
+  {
+   "id": 24,
+   "type": "StringFormat",
+   "pos": [
+    -2160,
+    1560
+   ],
+   "size": [
+    340,
+    110
+   ],
+   "flags": {},
+   "order": 16,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "values.a",
+     "name": "values.a",
+     "type": "*",
+     "link": 11,
+     "shape": 7,
+     "label": "a"
+    },
+    {
+     "localized_name": "values.b",
+     "name": "values.b",
+     "type": "*",
+     "link": null,
+     "shape": 7,
+     "label": "b"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      68
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "StringFormat"
+   },
+   "widgets_values": [
+    "wangyang_mv/shot_{a:02d}"
+   ],
+   "title": "檔名"
+  },
+  {
+   "id": 25,
+   "type": "PrimitiveFloat",
+   "pos": [
+    -2580,
+    1440
+   ],
+   "size": [
+    360,
+    60
+   ],
+   "flags": {},
+   "order": 17,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "FLOAT",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "FLOAT",
+     "name": "FLOAT",
+     "type": "FLOAT",
+     "links": [
+      12
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveFloat"
+   },
+   "widgets_values": [
+    10
+   ],
+   "title": "每段秒數"
+  },
+  {
+   "id": 26,
+   "type": "ComfyMathExpression",
+   "pos": [
+    -2580,
+    1540
+   ],
+   "size": [
+    360,
+    130
+   ],
+   "flags": {},
+   "order": 18,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "values.a",
+     "name": "values.a",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": 12,
+     "label": "a"
+    },
+    {
+     "localized_name": "values.b",
+     "name": "values.b",
+     "type": "FLOAT,INT,BOOLEAN",
+     "link": null,
+     "shape": 7,
+     "label": "b"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "FLOAT",
+     "name": "FLOAT",
+     "type": "FLOAT",
+     "links": null
+    },
+    {
+     "localized_name": "INT",
+     "name": "INT",
+     "type": "INT",
+     "links": [
+      50
+     ]
+    },
+    {
+     "localized_name": "BOOL",
+     "name": "BOOL",
+     "type": "BOOLEAN",
+     "links": null
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ComfyMathExpression"
+   },
+   "widgets_values": [
+    "max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17"
+   ],
+   "title": "秒數→影格數 (17k+5)"
+  },
+  {
+   "id": 27,
+   "type": "ResolutionSelector",
+   "pos": [
+    -2580,
+    1710
+   ],
+   "size": [
+    360,
+    130
+   ],
+   "flags": {},
+   "order": 19,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "localized_name": "width",
+     "name": "width",
+     "type": "INT",
+     "links": [
+      48
+     ]
+    },
+    {
+     "localized_name": "height",
+     "name": "height",
+     "type": "INT",
+     "links": [
+      49
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "ResolutionSelector"
+   },
+   "widgets_values": [
+    "16:9 (Widescreen)",
+    0.98,
+    32
+   ],
+   "title": "Resolution (0.98 = 1344×768)",
+   "showAdvanced": true
+  },
+  {
+   "id": 101,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    1200
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 20,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      13
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: An endless calm night sea under a huge pale moon, mist drifting over the water; the horizon dissolves into the sky so the sea seems to float.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Extreme wide shot, very slow push-in over the glassy moonlit sea, tiny ripples of silver light, mist rolling across the surface, a single drop of water falls upward from the sea into the sky.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "01｜0:00–0:09｜前奏｜月光下無邊的夜海，霧氣漂浮，一滴"
+  },
+  {
+   "id": 102,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    1200
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 21,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      14
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: A dim bedroom at night where shallow, perfectly still sea water covers the floor, reflecting moonlight from the window; the woman lies asleep on the bed, dreaming.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Low angle gliding just above the water-covered bedroom floor, moonlight reflections rippling on the walls, a white curtain swaying slowly like seaweed.\n[4.4s-10.0s] Shot 2: Slow overhead shot of the woman asleep on the bed, her black hair spread on the pillow like ink in water, her eyelids flutter as she begins to dream.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "02｜0:09–0:18｜前奏｜臥室地板淹著靜止的海水，女主角睡"
+  },
+  {
+   "id": 103,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    1200
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 22,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      15
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: In her dream, the woman stands barefoot on a vast wet beach at night as the tide pulls back far into the distance, leaving a mirror-like shore.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Medium shot from behind: the woman stands at the edge of the glistening sand, the sea retreating away from her feet in slow motion.\n[4.4s-10.0s] Shot 2: Extreme wide shot: the tide drawing back unnaturally far toward the horizon, exposing a shining mirror of wet sand that reflects the moon, the woman a tiny figure.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "03｜0:18–0:27｜主歌一｜夢裡她赤腳站在夜晚沙灘，潮水退得"
+  },
+  {
+   "id": 104,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    1580
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 23,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      16
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: Far out on the mirror-like sand, the man walks away from her toward the receding sea, never turning around.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Wide shot: the man walks away across the reflective sand toward the horizon, his reflection walking upside down beneath him.\n[3.9s-10.0s] Shot 2: Over-the-shoulder shot from behind the woman: she watches him grow smaller and smaller, mist swallowing him step by step.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "04｜0:27–0:35｜主歌一｜男人背對著她一直往海走，倒影在沙"
+  },
+  {
+   "id": 105,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    1580
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 24,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      17
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The woman wants to call out to him but stays silent; the air around her is full of floating water droplets frozen in time.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Close-up of the woman's face in moonlight, her lips part as if to call out, then close; tears gather in her eyes; tiny water droplets hang motionless in the air around her.\n[3.9s-10.0s] Shot 2: Close-up of her hand rising slightly toward the distant figure, then slowly lowering; droplets drift past her fingers.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "05｜0:35–0:43｜主歌一｜她想喊他卻沒出聲，空氣裡的水珠靜"
+  },
+  {
+   "id": 106,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    1580
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 25,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      18
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: She keeps waiting alone on the endless shore while time passes around her.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-5.0s] Shot 1: Wide static shot: the woman stands alone on the vast shore while the moon moves across the sky in a time-lapse and stars wheel overhead; she does not move.\n[5.0s-10.0s] Shot 2: Medium side shot: wind lifts her hair and the hem of her dress, the distant horizon now empty, she keeps waiting.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "06｜0:43–0:53｜主歌一｜她獨自在岸邊一直等，月亮和星空在"
+  },
+  {
+   "id": 107,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    1960
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 26,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      19
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: At the waterline she folds her wishes into small white paper boats and sets them on the sea one by one; the night slowly turns toward dawn.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Close-up of the woman's hands folding a sheet of white paper into a small paper boat, faint glowing handwriting visible on the paper.\n[3.3s-6.7s] Shot 2: Low angle at water level: she kneels on the shore and places paper boats on the dark water one after another, a line of tiny boats drifting away, each glowing softly like a lantern.\n[6.7s-10.0s] Shot 3: Wide shot: she kneels at the shore as the sky behind the sea turns pale blue with dawn, the line of paper boats disappearing into the horizon.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "07｜0:53–1:03｜主歌二｜她把願望折成發光的紙船，跪在岸邊"
+  },
+  {
+   "id": 108,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    1960
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 27,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      20
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket).\n\nScene overview: No boat returns; she wakes in the water-filled bedroom at dawn, her child asleep beside her.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Wide shot of the empty sea at dawn, no boats on the water, a single soaked paper boat lying flat on the wet sand.\n[3.3s-6.7s] Shot 2: The woman opens her eyes in bed in soft blue dawn light, shallow sea water on the bedroom floor reflecting the window; beside her the child sleeps peacefully.\n[6.7s-10.0s] Shot 3: Gentle close-up of the sleeping child's closed eyes and long eyelashes in soft morning light, a tender, quiet moment; the woman watches with a sad, loving expression.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "08｜1:03–1:13｜主歌二／導歌｜沒有一艘紙船回來；她在淹水的臥室"
+  },
+  {
+   "id": 109,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    1960
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 28,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      21
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The chorus opens into a vast surreal ocean: the sea rises around the woman and her tears become the ocean itself.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Extreme wide aerial shot: the woman stands on a small circle of sand in the middle of an endless ocean that stretches to every horizon under the moon.\n[2.8s-6.1s] Shot 2: Close-up: a single tear rolls down her cheek and falls; in slow motion the tear hits the water and spreads into a huge ring of light across the sea.\n[6.1s-10.0s] Shot 3: Wide shot: the sea level gently rises around her as she stands still, water reaching her knees, her ivory dress floating on the surface like petals.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "09｜1:13–1:22｜副歌一｜她站在汪洋中央的小沙洲，眼淚落下"
+  },
+  {
+   "id": 110,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    2340
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 29,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      22
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: A lone wooden boat drifts on the dark sea, carrying faint glowing images of the man's past and of the woman.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Wide shot: a small old wooden rowing boat drifts alone on the calm night sea, lit by moonlight, no one aboard.\n[2.8s-6.1s] Shot 2: Closer shot: inside the boat, translucent glowing images float like projected memories - the man's silhouette and the woman's face - rippling like reflections on water.\n[6.1s-10.0s] Shot 3: Low angle from the water surface: the boat slowly drifts away toward the horizon, its glowing memories trailing behind like mist.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "10｜1:22–1:31｜副歌一｜一條小木舟在夜海上漂，載著他的身"
+  },
+  {
+   "id": 111,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    2340
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 30,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      23
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: A dreamy transition: the ocean flows into the bedroom and the room begins to float.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Slow tracking shot: dark sea water pours silently through the bedroom window like a slow waterfall, moonlight shimmering through it.\n[3.9s-10.0s] Shot 2: Wide shot: pillows, a chair and paper boats float gently in the air of the flooded room, the sea surface hanging above like a ceiling.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "11｜1:31–1:38｜間奏｜海水從窗戶灌進臥室，房裡的東西漂"
+  },
+  {
+   "id": 112,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    2340
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 31,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      24
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: At night in the quiet bedroom she tenderly says goodnight to her sleeping child, but in the window's reflection she sees the man.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Close-up: the woman's fingertips gently brush a strand of hair from the sleeping child's forehead, warm, tender and protective, deep blue night light.\n[4.4s-10.0s] Shot 2: She looks up at the dark window; in the glass reflection, instead of the room, she sees the faint silhouette of the man standing on a moonlit shore, his back turned.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "12｜1:38–1:47｜主歌三｜她溫柔撥開孩子額前的頭髮道晚安，"
+  },
+  {
+   "id": 113,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    2720
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 32,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      25
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Tension rises: she tries to stop thinking of him, but the sea keeps rising and pulling her back.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Close-up: the woman shuts her eyes and slowly shakes her head, ripples of water spreading in the air around her face.\n[3.3s-6.7s] Shot 2: Medium shot: she walks away from the window, but the shallow sea on the floor flows backward, pulling her steps toward the window again.\n[6.7s-10.0s] Shot 3: Wide shot: the water in the room rises quickly to her waist and swirls slowly around her as she stands still, unable to stop.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "13｜1:47–1:57｜導歌二｜她想停止思念，地上的海水卻把她拉"
+  },
+  {
+   "id": 114,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    2720
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 33,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      26
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The beat drops: the whole room bursts into ocean and she is suddenly underwater in a vast glowing sea.\n\nStoryboard (4 shots, hard cuts landing on the beat):\n[0.0s-2.2s] Shot 1: The bedroom walls dissolve in an instant into open ocean, a huge wave of moonlit water rolling through the space.\n[2.2s-4.4s] Shot 2: Underwater: the woman floats weightless in deep blue water, her black hair and ivory dress swirling, shafts of moonlight cutting through.\n[4.4s-6.7s] Shot 3: Bioluminescent teal light pulses through the water around her in a steady rhythm, like a heartbeat.\n[6.7s-10.0s] Shot 4: She looks up toward the bright surface far above and reaches out one hand.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "14｜1:57–2:06｜副歌二｜節奏落下，房間瞬間化成大海，她漂"
+  },
+  {
+   "id": 115,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    2720
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 34,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      27
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: From underwater she sees the wooden boat above her on the surface, glowing with memories.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Low angle from deep underwater: the dark shape of the small wooden boat floats on the bright silver surface far above her.\n[2.8s-6.1s] Shot 2: Underwater medium shot: the woman swims upward toward the boat, trails of tiny glowing bubbles around her.\n[6.1s-10.0s] Shot 3: At the surface: she reaches the side of the boat but it drifts just out of reach, her fingertips touching only water.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "15｜2:06–2:15｜副歌二｜從海底看見水面上的小舟，她游上去"
+  },
+  {
+   "id": 116,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    3100
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 35,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      28
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Dark synth instrumental: the dream becomes stranger as hundreds of glowing paper boats rise from the sea into the night sky.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Wide shot: hundreds of glowing white paper boats lift off the black sea and float upward into the starry sky like lanterns.\n[2.8s-6.1s] Shot 2: Medium shot: the woman stands waist-deep in the sea, looking up as the paper boats drift past her face, teal and violet light flickering.\n[6.1s-10.0s] Shot 3: Extreme wide shot: the night sky filled with floating paper boats, reflected perfectly in the mirror-calm ocean.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "16｜2:15–2:24｜器樂段｜暗黑合成器獨奏：上百艘發光紙船從"
+  },
+  {
+   "id": 117,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    3100
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 36,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      29
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The sea turns upside down: the whole ocean hangs in the sky above the woman like a ceiling.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Slow rotating wide shot: the entire ocean flips upside down and hangs above the woman like a vast rippling ceiling, the moon glowing beneath it.\n[3.9s-10.0s] Shot 2: Medium shot: the woman stands on dry mirror-like ground looking up at the suspended sea, a single drop falling slowly toward her face.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "17｜2:24–2:32｜器樂段｜整片海倒過來懸在天上，她站在鏡面"
+  },
+  {
+   "id": 118,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    3100
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 37,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      30
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: The man's side of the story: their hands slowly let go, and the sea opens between them.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Extreme close-up in slow motion: the man's hand and the woman's hand, fingers intertwined, slowly loosening and slipping apart, water droplets falling between them.\n[3.9s-10.0s] Shot 2: Wide shot: the man, seen from behind, stands on one shore while the sea quietly spreads and widens between him and the woman's distant figure on the far shore.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "18｜2:32–2:40｜橋段（男聲）｜男聲橋段：他先鬆開她的手，海在兩"
+  },
+  {
+   "id": 119,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    3480
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 38,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      31
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: He keeps walking away without turning back, afraid to look at the boat that carries his own image.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Medium shot from behind: the man walks along the dark shore, shoulders tense; he slows as if about to turn around, but does not.\n[3.3s-6.7s] Shot 2: Wide shot: behind him on the sea, the small wooden boat drifts past, carrying a faint glowing image of his own silhouette.\n[6.7s-10.0s] Shot 3: Close shot of his reflection on the wet sand: the reflection turns its head to look back while the man himself keeps walking forward.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "19｜2:40–2:50｜橋段（男聲）｜他不敢回頭，海上的舟載著他自己的"
+  },
+  {
+   "id": 120,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    3480
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 39,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      32
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Final chorus: the woman stands in the small wooden boat in the middle of a vast glowing ocean, singing with all her heart.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Aerial shot circling the small wooden boat on an endless moonlit ocean, the woman standing in it, her dress and hair blowing in the wind.\n[2.8s-6.1s] Shot 2: Medium close-up: the woman sings with her eyes closed, emotional, tears shining, wind and sea spray around her.\n[6.1s-10.0s] Shot 3: Wide shot: waves of glowing teal light ripple outward from the boat across the whole ocean in time with the music.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "20｜2:50–2:59｜最終副歌｜最終副歌：她站在汪洋中央的小舟上"
+  },
+  {
+   "id": 121,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    3480
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 40,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      33
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: Memories rise from the sea around the boat: glowing translucent images of the man and the woman's past together.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Translucent glowing memories rise from the water around the boat like holograms: the couple walking together on a beach, the man's silhouette, the woman laughing.\n[2.8s-6.1s] Shot 2: Close-up: the woman reaches out and touches one glowing memory, and it breaks into drifting droplets of light.\n[6.1s-10.0s] Shot 3: Wide shot: the boat floats among dozens of fading memory images on the dark sea.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "21｜2:59–3:08｜最終副歌｜海面升起兩人過去的回憶光影，她一"
+  },
+  {
+   "id": 122,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    3860
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 41,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      34
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Climax: with her last song, the light peaks and the sky begins to break into dawn.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Low angle: the woman in the boat raises her face to the sky and sings, a huge wave of silver light rising behind her.\n[2.8s-6.1s] Shot 2: Extreme wide shot: the horizon cracks open with the first golden light of dawn, the night sea turning from indigo to gold.\n[6.1s-10.0s] Shot 3: Close-up of her face lit warmly by the sunrise, the tears drying, a calm, resolved expression.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "22｜3:08–3:16｜最終副歌｜高潮：她用最後的歌聲唱著，海平線"
+  },
+  {
+   "id": 123,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    3860
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 42,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      35
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: At dawn the tide comes back in; this time she does not wait, she turns and walks away.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Wide shot at sunrise: the tide gently rushes back in over the sand, washing away a line of a man's footprints.\n[3.3s-6.7s] Shot 2: Medium shot: the woman stands at the waterline as the water returns to her ankles; she looks at the sea one last time.\n[6.7s-10.0s] Shot 3: She turns her back to the sea and walks away up the beach, calm and free, the sunrise behind her.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "23｜3:16–3:26｜尾奏｜潮水回來，沖掉男人的腳印；這一次"
+  },
+  {
+   "id": 124,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    3860
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 43,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      36
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket).\n\nScene overview: Morning: back in the bedroom, the sea water on the floor is quietly draining away.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: The woman opens the bedroom curtains, warm morning sunlight floods in, the shallow sea water on the floor draining away and evaporating into sparkling mist.\n[3.9s-10.0s] Shot 2: She sits on the edge of the bed beside the sleeping child and gently rests her hand on the blanket, a small peaceful smile.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "24｜3:26–3:34｜尾奏｜早晨她拉開窗簾，地上的海水慢慢退"
+  },
+  {
+   "id": 125,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1760,
+    4240
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 44,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      37
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: A single paper boat rests on the windowsill, dry, in the morning light.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Close-up: a small white paper boat on the sunny windowsill, dry and still, dust floating in the sunbeam.\n[4.4s-10.0s] Shot 2: The woman picks up the paper boat, looks at it, and gently places it outside the open window where the breeze carries it away.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "25｜3:34–3:42｜尾奏｜窗台上一艘乾掉的紙船，她把它放出"
+  },
+  {
+   "id": 126,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -1170,
+    4240
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 45,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      38
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: The paper boat drifts on the wind over the sea toward the horizon.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Long slow tracking shot following the small white paper boat as it floats on the breeze high above a calm, sunlit sea, gliding toward the bright horizon.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "26｜3:42–3:51｜尾奏｜紙船乘著風飄過陽光下的海面"
+  },
+  {
+   "id": 127,
+   "type": "PrimitiveStringMultiline",
+   "pos": [
+    -580,
+    4240
+   ],
+   "size": [
+    560,
+    330
+   ],
+   "flags": {},
+   "order": 46,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "value",
+     "name": "value",
+     "type": "STRING",
+     "link": null,
+     "widget": {
+      "name": "value"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "STRING",
+     "name": "STRING",
+     "type": "STRING",
+     "links": [
+      39
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "PrimitiveStringMultiline"
+   },
+   "widgets_values": [
+    "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: Ending: the calm sea at sunrise, gentle waves, slowly fading into white mist.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Extreme wide static shot of the calm sea at sunrise, gentle waves rolling onto the empty shore, the image slowly dissolving into soft white mist.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+   ],
+   "title": "27｜3:51–3:58｜尾奏｜結尾：日出下平靜的海，畫面慢慢化"
+  },
+  {
+   "id": 32,
+   "type": "CreateList",
+   "pos": [
+    50,
+    1200
+   ],
+   "size": [
+    300,
+    260
+   ],
+   "flags": {},
+   "order": 47,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "input0",
+     "name": "inputs.input0",
+     "type": "*",
+     "link": 13,
+     "label": "input0"
+    },
+    {
+     "localized_name": "input1",
+     "name": "inputs.input1",
+     "type": "*",
+     "link": 14,
+     "shape": 7,
+     "label": "input1"
+    },
+    {
+     "localized_name": "input2",
+     "name": "inputs.input2",
+     "type": "*",
+     "link": 15,
+     "shape": 7,
+     "label": "input2"
+    },
+    {
+     "localized_name": "input3",
+     "name": "inputs.input3",
+     "type": "*",
+     "link": 16,
+     "shape": 7,
+     "label": "input3"
+    },
+    {
+     "localized_name": "input4",
+     "name": "inputs.input4",
+     "type": "*",
+     "link": 17,
+     "shape": 7,
+     "label": "input4"
+    },
+    {
+     "localized_name": "input5",
+     "name": "inputs.input5",
+     "type": "*",
+     "link": 18,
+     "shape": 7,
+     "label": "input5"
+    },
+    {
+     "localized_name": "input6",
+     "name": "inputs.input6",
+     "type": "*",
+     "link": 19,
+     "shape": 7,
+     "label": "input6"
+    },
+    {
+     "localized_name": "input7",
+     "name": "inputs.input7",
+     "type": "*",
+     "link": 20,
+     "shape": 7,
+     "label": "input7"
+    },
+    {
+     "localized_name": "input8",
+     "name": "inputs.input8",
+     "type": "*",
+     "link": 21,
+     "shape": 7,
+     "label": "input8"
+    },
+    {
+     "localized_name": "input9",
+     "name": "inputs.input9",
+     "type": "*",
+     "link": null,
+     "shape": 7,
+     "label": "input9"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "list",
+     "name": "list",
+     "type": "*",
+     "links": [
+      40
+     ],
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CreateList"
+   },
+   "title": "Create List（第 1～9 段）"
+  },
+  {
+   "id": 33,
+   "type": "CreateList",
+   "pos": [
+    50,
+    1490
+   ],
+   "size": [
+    300,
+    260
+   ],
+   "flags": {},
+   "order": 48,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "input0",
+     "name": "inputs.input0",
+     "type": "*",
+     "link": 22,
+     "label": "input0"
+    },
+    {
+     "localized_name": "input1",
+     "name": "inputs.input1",
+     "type": "*",
+     "link": 23,
+     "shape": 7,
+     "label": "input1"
+    },
+    {
+     "localized_name": "input2",
+     "name": "inputs.input2",
+     "type": "*",
+     "link": 24,
+     "shape": 7,
+     "label": "input2"
+    },
+    {
+     "localized_name": "input3",
+     "name": "inputs.input3",
+     "type": "*",
+     "link": 25,
+     "shape": 7,
+     "label": "input3"
+    },
+    {
+     "localized_name": "input4",
+     "name": "inputs.input4",
+     "type": "*",
+     "link": 26,
+     "shape": 7,
+     "label": "input4"
+    },
+    {
+     "localized_name": "input5",
+     "name": "inputs.input5",
+     "type": "*",
+     "link": 27,
+     "shape": 7,
+     "label": "input5"
+    },
+    {
+     "localized_name": "input6",
+     "name": "inputs.input6",
+     "type": "*",
+     "link": 28,
+     "shape": 7,
+     "label": "input6"
+    },
+    {
+     "localized_name": "input7",
+     "name": "inputs.input7",
+     "type": "*",
+     "link": 29,
+     "shape": 7,
+     "label": "input7"
+    },
+    {
+     "localized_name": "input8",
+     "name": "inputs.input8",
+     "type": "*",
+     "link": 30,
+     "shape": 7,
+     "label": "input8"
+    },
+    {
+     "localized_name": "input9",
+     "name": "inputs.input9",
+     "type": "*",
+     "link": null,
+     "shape": 7,
+     "label": "input9"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "list",
+     "name": "list",
+     "type": "*",
+     "links": [
+      41
+     ],
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CreateList"
+   },
+   "title": "Create List（第 10～18 段）"
+  },
+  {
+   "id": 34,
+   "type": "CreateList",
+   "pos": [
+    50,
+    1780
+   ],
+   "size": [
+    300,
+    260
+   ],
+   "flags": {},
+   "order": 49,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "input0",
+     "name": "inputs.input0",
+     "type": "*",
+     "link": 31,
+     "label": "input0"
+    },
+    {
+     "localized_name": "input1",
+     "name": "inputs.input1",
+     "type": "*",
+     "link": 32,
+     "shape": 7,
+     "label": "input1"
+    },
+    {
+     "localized_name": "input2",
+     "name": "inputs.input2",
+     "type": "*",
+     "link": 33,
+     "shape": 7,
+     "label": "input2"
+    },
+    {
+     "localized_name": "input3",
+     "name": "inputs.input3",
+     "type": "*",
+     "link": 34,
+     "shape": 7,
+     "label": "input3"
+    },
+    {
+     "localized_name": "input4",
+     "name": "inputs.input4",
+     "type": "*",
+     "link": 35,
+     "shape": 7,
+     "label": "input4"
+    },
+    {
+     "localized_name": "input5",
+     "name": "inputs.input5",
+     "type": "*",
+     "link": 36,
+     "shape": 7,
+     "label": "input5"
+    },
+    {
+     "localized_name": "input6",
+     "name": "inputs.input6",
+     "type": "*",
+     "link": 37,
+     "shape": 7,
+     "label": "input6"
+    },
+    {
+     "localized_name": "input7",
+     "name": "inputs.input7",
+     "type": "*",
+     "link": 38,
+     "shape": 7,
+     "label": "input7"
+    },
+    {
+     "localized_name": "input8",
+     "name": "inputs.input8",
+     "type": "*",
+     "link": 39,
+     "shape": 7,
+     "label": "input8"
+    },
+    {
+     "localized_name": "input9",
+     "name": "inputs.input9",
+     "type": "*",
+     "link": null,
+     "shape": 7,
+     "label": "input9"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "list",
+     "name": "list",
+     "type": "*",
+     "links": [
+      42
+     ],
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CreateList"
+   },
+   "title": "Create List（第 19～27 段）"
+  },
+  {
+   "id": 30,
+   "type": "CreateList",
+   "pos": [
+    50,
+    2090
+   ],
+   "size": [
+    300,
+    128
+   ],
+   "flags": {},
+   "order": 50,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "input0",
+     "name": "inputs.input0",
+     "type": "*",
+     "link": 40,
+     "label": "input0"
+    },
+    {
+     "localized_name": "input1",
+     "name": "inputs.input1",
+     "type": "*",
+     "link": 41,
+     "shape": 7,
+     "label": "input1"
+    },
+    {
+     "localized_name": "input2",
+     "name": "inputs.input2",
+     "type": "*",
+     "link": 42,
+     "shape": 7,
+     "label": "input2"
+    },
+    {
+     "localized_name": "input3",
+     "name": "inputs.input3",
+     "type": "*",
+     "link": null,
+     "shape": 7,
+     "label": "input3"
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "list",
+     "name": "list",
+     "type": "*",
+     "links": [
+      43
+     ],
+     "shape": 6
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CreateList"
+   },
+   "title": "Create List（合併成 27 段）"
+  },
+  {
+   "id": 31,
+   "type": "GetItemFromList",
+   "pos": [
+    50,
+    2250
+   ],
+   "size": [
+    300,
+    80
+   ],
+   "flags": {},
+   "order": 51,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "list",
+     "name": "list",
+     "type": "*",
+     "link": 43
+    },
+    {
+     "localized_name": "index",
+     "name": "index",
+     "type": "INT",
+     "link": 44,
+     "widget": {
+      "name": "index"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "*",
+     "name": "*",
+     "type": "*",
+     "links": [
+      47
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "GetItemFromList"
+   },
+   "widgets_values": [
+    0
+   ],
+   "title": "取出這次的提示詞"
+  },
+  {
+   "id": 40,
+   "type": "MiniMaxH3ImageToVideo",
+   "pos": [
+    430,
+    1200
+   ],
+   "size": [
+    430,
+    300
+   ],
+   "flags": {},
+   "order": 52,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "clip",
+     "name": "clip",
+     "type": "CLIP",
+     "link": 45
+    },
+    {
+     "localized_name": "vae",
+     "name": "vae",
+     "type": "VAE",
+     "link": 46
+    },
+    {
+     "localized_name": "first_frame",
+     "name": "first_frame",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    },
+    {
+     "localized_name": "last_frame",
+     "name": "last_frame",
+     "type": "IMAGE",
+     "link": null,
+     "shape": 7
+    },
+    {
+     "localized_name": "prompt",
+     "name": "prompt",
+     "type": "STRING",
+     "link": 47,
+     "widget": {
+      "name": "prompt"
+     }
+    },
+    {
+     "localized_name": "width",
+     "name": "width",
+     "type": "INT",
+     "link": 48,
+     "widget": {
+      "name": "width"
+     }
+    },
+    {
+     "localized_name": "height",
+     "name": "height",
+     "type": "INT",
+     "link": 49,
+     "widget": {
+      "name": "height"
+     }
+    },
+    {
+     "localized_name": "length",
+     "name": "length",
+     "type": "INT",
+     "link": 50,
+     "widget": {
+      "name": "length"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "positive",
+     "name": "positive",
+     "type": "CONDITIONING",
+     "links": [
+      55
+     ]
+    },
+    {
+     "localized_name": "LATENT",
+     "name": "LATENT",
+     "type": "LATENT",
+     "links": [
+      60
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "MiniMaxH3ImageToVideo"
+   },
+   "widgets_values": [
+    "",
+    1344,
+    768,
+    243
+   ]
+  },
+  {
+   "id": 41,
+   "type": "RandomNoise",
+   "pos": [
+    900,
+    1200
+   ],
+   "size": [
+    320,
+    82
+   ],
+   "flags": {},
+   "order": 53,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "noise_seed",
+     "name": "noise_seed",
+     "type": "INT",
+     "link": 51,
+     "widget": {
+      "name": "noise_seed"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "NOISE",
+     "name": "NOISE",
+     "type": "NOISE",
+     "links": [
+      56
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "RandomNoise"
+   },
+   "widgets_values": [
+    1,
+    "fixed"
+   ]
+  },
+  {
+   "id": 42,
+   "type": "KSamplerSelect",
+   "pos": [
+    900,
+    1320
+   ],
+   "size": [
+    320,
+    60
+   ],
+   "flags": {},
+   "order": 54,
+   "mode": 0,
+   "inputs": [],
+   "outputs": [
+    {
+     "localized_name": "SAMPLER",
+     "name": "SAMPLER",
+     "type": "SAMPLER",
+     "links": [
+      58
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "KSamplerSelect"
+   },
+   "widgets_values": [
+    "res_multistep"
+   ]
+  },
+  {
+   "id": 43,
+   "type": "BasicScheduler",
+   "pos": [
+    900,
+    1420
+   ],
+   "size": [
+    320,
+    110
+   ],
+   "flags": {},
+   "order": 55,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "model",
+     "name": "model",
+     "type": "MODEL",
+     "link": 52
+    },
+    {
+     "localized_name": "steps",
+     "name": "steps",
+     "type": "INT",
+     "link": 53,
+     "widget": {
+      "name": "steps"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "SIGMAS",
+     "name": "SIGMAS",
+     "type": "SIGMAS",
+     "links": [
+      59
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "BasicScheduler"
+   },
+   "widgets_values": [
+    "simple",
+    8,
+    1
+   ]
+  },
+  {
+   "id": 44,
+   "type": "BasicGuider",
+   "pos": [
+    900,
+    1570
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 56,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "model",
+     "name": "model",
+     "type": "MODEL",
+     "link": 54
+    },
+    {
+     "localized_name": "conditioning",
+     "name": "conditioning",
+     "type": "CONDITIONING",
+     "link": 55
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "GUIDER",
+     "name": "GUIDER",
+     "type": "GUIDER",
+     "links": [
+      57
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "BasicGuider"
+   }
+  },
+  {
+   "id": 45,
+   "type": "SamplerCustomAdvanced",
+   "pos": [
+    1260,
+    1200
+   ],
+   "size": [
+    320,
+    120
+   ],
+   "flags": {},
+   "order": 57,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "noise",
+     "name": "noise",
+     "type": "NOISE",
+     "link": 56
+    },
+    {
+     "localized_name": "guider",
+     "name": "guider",
+     "type": "GUIDER",
+     "link": 57
+    },
+    {
+     "localized_name": "sampler",
+     "name": "sampler",
+     "type": "SAMPLER",
+     "link": 58
+    },
+    {
+     "localized_name": "sigmas",
+     "name": "sigmas",
+     "type": "SIGMAS",
+     "link": 59
+    },
+    {
+     "localized_name": "latent_image",
+     "name": "latent_image",
+     "type": "LATENT",
+     "link": 60
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "output",
+     "name": "output",
+     "type": "LATENT",
+     "links": [
+      61,
+      63
+     ]
+    },
+    {
+     "localized_name": "denoised_output",
+     "name": "denoised_output",
+     "type": "LATENT",
+     "links": null
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "SamplerCustomAdvanced"
+   }
+  },
+  {
+   "id": 46,
+   "type": "VAEDecode",
+   "pos": [
+    1260,
+    1370
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 58,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "samples",
+     "name": "samples",
+     "type": "LATENT",
+     "link": 61
+    },
+    {
+     "localized_name": "vae",
+     "name": "vae",
+     "type": "VAE",
+     "link": 62
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "IMAGE",
+     "name": "IMAGE",
+     "type": "IMAGE",
+     "links": [
+      65
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "VAEDecode"
+   }
+  },
+  {
+   "id": 47,
+   "type": "VAEDecodeAudio",
+   "pos": [
+    1260,
+    1460
+   ],
+   "size": [
+    320,
+    50
+   ],
+   "flags": {},
+   "order": 59,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "samples",
+     "name": "samples",
+     "type": "LATENT",
+     "link": 63
+    },
+    {
+     "localized_name": "vae",
+     "name": "vae",
+     "type": "VAE",
+     "link": 64
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "AUDIO",
+     "name": "AUDIO",
+     "type": "AUDIO",
+     "links": [
+      66
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "VAEDecodeAudio"
+   }
+  },
+  {
+   "id": 48,
+   "type": "CreateVideo",
+   "pos": [
+    1260,
+    1550
+   ],
+   "size": [
+    320,
+    90
+   ],
+   "flags": {},
+   "order": 60,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "images",
+     "name": "images",
+     "type": "IMAGE",
+     "link": 65
+    },
+    {
+     "localized_name": "audio",
+     "name": "audio",
+     "type": "AUDIO",
+     "link": 66,
+     "shape": 7
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "VIDEO",
+     "name": "VIDEO",
+     "type": "VIDEO",
+     "links": [
+      67
+     ]
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "CreateVideo"
+   },
+   "widgets_values": [
+    24,
+    8
+   ]
+  },
+  {
+   "id": 49,
+   "type": "SaveVideo",
+   "pos": [
+    430,
+    1680
+   ],
+   "size": [
+    1150,
+    700
+   ],
+   "flags": {},
+   "order": 61,
+   "mode": 0,
+   "inputs": [
+    {
+     "localized_name": "video",
+     "name": "video",
+     "type": "VIDEO",
+     "link": 67
+    },
+    {
+     "localized_name": "filename_prefix",
+     "name": "filename_prefix",
+     "type": "STRING",
+     "link": 68,
+     "widget": {
+      "name": "filename_prefix"
+     }
+    }
+   ],
+   "outputs": [
+    {
+     "localized_name": "video",
+     "name": "video",
+     "type": "VIDEO",
+     "links": null
+    }
+   ],
+   "properties": {
+    "cnr_id": "comfy-core",
+    "ver": "0.33.0",
+    "Node name for S&R": "SaveVideo"
+   },
+   "widgets_values": [
+    "wangyang_mv/shot",
+    "auto",
+    "auto"
+   ]
+  }
+ ],
+ "links": [
+  [
+   1,
+   10,
+   0,
+   14,
+   0,
+   "MODEL"
+  ],
+  [
+   2,
+   10,
+   0,
+   18,
+   0,
+   "MODEL"
+  ],
+  [
+   3,
+   14,
+   0,
+   18,
+   1,
+   "MODEL"
+  ],
+  [
+   4,
+   15,
+   0,
+   18,
+   2,
+   "BOOLEAN"
+  ],
+  [
+   5,
+   16,
+   0,
+   19,
+   0,
+   "INT"
+  ],
+  [
+   6,
+   17,
+   0,
+   19,
+   1,
+   "INT"
+  ],
+  [
+   7,
+   15,
+   0,
+   19,
+   2,
+   "BOOLEAN"
+  ],
+  [
+   8,
+   20,
+   0,
+   22,
+   0,
+   "INT"
+  ],
+  [
+   9,
+   20,
+   0,
+   23,
+   0,
+   "INT"
+  ],
+  [
+   10,
+   21,
+   0,
+   23,
+   1,
+   "INT"
+  ],
+  [
+   11,
+   20,
+   0,
+   24,
+   0,
+   "INT"
+  ],
+  [
+   12,
+   25,
+   0,
+   26,
+   0,
+   "FLOAT"
+  ],
+  [
+   13,
+   101,
+   0,
+   32,
+   0,
+   "STRING"
+  ],
+  [
+   14,
+   102,
+   0,
+   32,
+   1,
+   "STRING"
+  ],
+  [
+   15,
+   103,
+   0,
+   32,
+   2,
+   "STRING"
+  ],
+  [
+   16,
+   104,
+   0,
+   32,
+   3,
+   "STRING"
+  ],
+  [
+   17,
+   105,
+   0,
+   32,
+   4,
+   "STRING"
+  ],
+  [
+   18,
+   106,
+   0,
+   32,
+   5,
+   "STRING"
+  ],
+  [
+   19,
+   107,
+   0,
+   32,
+   6,
+   "STRING"
+  ],
+  [
+   20,
+   108,
+   0,
+   32,
+   7,
+   "STRING"
+  ],
+  [
+   21,
+   109,
+   0,
+   32,
+   8,
+   "STRING"
+  ],
+  [
+   22,
+   110,
+   0,
+   33,
+   0,
+   "STRING"
+  ],
+  [
+   23,
+   111,
+   0,
+   33,
+   1,
+   "STRING"
+  ],
+  [
+   24,
+   112,
+   0,
+   33,
+   2,
+   "STRING"
+  ],
+  [
+   25,
+   113,
+   0,
+   33,
+   3,
+   "STRING"
+  ],
+  [
+   26,
+   114,
+   0,
+   33,
+   4,
+   "STRING"
+  ],
+  [
+   27,
+   115,
+   0,
+   33,
+   5,
+   "STRING"
+  ],
+  [
+   28,
+   116,
+   0,
+   33,
+   6,
+   "STRING"
+  ],
+  [
+   29,
+   117,
+   0,
+   33,
+   7,
+   "STRING"
+  ],
+  [
+   30,
+   118,
+   0,
+   33,
+   8,
+   "STRING"
+  ],
+  [
+   31,
+   119,
+   0,
+   34,
+   0,
+   "STRING"
+  ],
+  [
+   32,
+   120,
+   0,
+   34,
+   1,
+   "STRING"
+  ],
+  [
+   33,
+   121,
+   0,
+   34,
+   2,
+   "STRING"
+  ],
+  [
+   34,
+   122,
+   0,
+   34,
+   3,
+   "STRING"
+  ],
+  [
+   35,
+   123,
+   0,
+   34,
+   4,
+   "STRING"
+  ],
+  [
+   36,
+   124,
+   0,
+   34,
+   5,
+   "STRING"
+  ],
+  [
+   37,
+   125,
+   0,
+   34,
+   6,
+   "STRING"
+  ],
+  [
+   38,
+   126,
+   0,
+   34,
+   7,
+   "STRING"
+  ],
+  [
+   39,
+   127,
+   0,
+   34,
+   8,
+   "STRING"
+  ],
+  [
+   40,
+   32,
+   0,
+   30,
+   0,
+   "*"
+  ],
+  [
+   41,
+   33,
+   0,
+   30,
+   1,
+   "*"
+  ],
+  [
+   42,
+   34,
+   0,
+   30,
+   2,
+   "*"
+  ],
+  [
+   43,
+   30,
+   0,
+   31,
+   0,
+   "*"
+  ],
+  [
+   44,
+   22,
+   1,
+   31,
+   1,
+   "INT"
+  ],
+  [
+   45,
+   11,
+   0,
+   40,
+   0,
+   "CLIP"
+  ],
+  [
+   46,
+   12,
+   0,
+   40,
+   1,
+   "VAE"
+  ],
+  [
+   47,
+   31,
+   0,
+   40,
+   4,
+   "*"
+  ],
+  [
+   48,
+   27,
+   0,
+   40,
+   5,
+   "INT"
+  ],
+  [
+   49,
+   27,
+   1,
+   40,
+   6,
+   "INT"
+  ],
+  [
+   50,
+   26,
+   1,
+   40,
+   7,
+   "INT"
+  ],
+  [
+   51,
+   23,
+   1,
+   41,
+   0,
+   "INT"
+  ],
+  [
+   52,
+   18,
+   0,
+   43,
+   0,
+   "MODEL"
+  ],
+  [
+   53,
+   19,
+   0,
+   43,
+   1,
+   "INT"
+  ],
+  [
+   54,
+   18,
+   0,
+   44,
+   0,
+   "MODEL"
+  ],
+  [
+   55,
+   40,
+   0,
+   44,
+   1,
+   "CONDITIONING"
+  ],
+  [
+   56,
+   41,
+   0,
+   45,
+   0,
+   "NOISE"
+  ],
+  [
+   57,
+   44,
+   0,
+   45,
+   1,
+   "GUIDER"
+  ],
+  [
+   58,
+   42,
+   0,
+   45,
+   2,
+   "SAMPLER"
+  ],
+  [
+   59,
+   43,
+   0,
+   45,
+   3,
+   "SIGMAS"
+  ],
+  [
+   60,
+   40,
+   1,
+   45,
+   4,
+   "LATENT"
+  ],
+  [
+   61,
+   45,
+   0,
+   46,
+   0,
+   "LATENT"
+  ],
+  [
+   62,
+   12,
+   0,
+   46,
+   1,
+   "VAE"
+  ],
+  [
+   63,
+   45,
+   0,
+   47,
+   0,
+   "LATENT"
+  ],
+  [
+   64,
+   13,
+   0,
+   47,
+   1,
+   "VAE"
+  ],
+  [
+   65,
+   46,
+   0,
+   48,
+   0,
+   "IMAGE"
+  ],
+  [
+   66,
+   47,
+   0,
+   48,
+   1,
+   "AUDIO"
+  ],
+  [
+   67,
+   48,
+   0,
+   49,
+   0,
+   "VIDEO"
+  ],
+  [
+   68,
+   24,
+   0,
+   49,
+   1,
+   "STRING"
+  ]
+ ],
+ "groups": [
+  {
+   "id": 1,
+   "title": "① 模型",
+   "bounding": [
+    -1790,
+    400,
+    1010,
+    680
+   ],
+   "color": "#3f789e",
+   "font_size": 28,
+   "flags": {}
+  },
+  {
+   "id": 2,
+   "title": "② 選段控制（每次 Run 會自動 +1）",
+   "bounding": [
+    -2610,
+    1120,
+    820,
+    760
+   ],
+   "color": "#a1309b",
+   "font_size": 28,
+   "flags": {}
+  },
+  {
+   "id": 3,
+   "title": "③ 27 段分鏡提示詞（可直接改文字）",
+   "bounding": [
+    -1790,
+    1120,
+    2190,
+    3530
+   ],
+   "color": "#8A8",
+   "font_size": 28,
+   "flags": {}
+  },
+  {
+   "id": 4,
+   "title": "④ 生成與輸出",
+   "bounding": [
+    400,
+    1120,
+    1210,
+    1300
+   ],
+   "color": "#3f8f5f",
+   "font_size": 28,
+   "flags": {}
+  }
+ ],
+ "definitions": {
+  "subgraphs": []
+ },
+ "config": {},
+ "extra": {
+  "ds": {
+   "scale": 0.45,
+   "offset": [
+    2700,
+    200
+   ]
+  },
+  "frontendVersion": "1.49.6"
+ },
+ "version": 0.4
+}

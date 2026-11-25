@@ -1,0 +1,339 @@
+{
+  "song": "汪洋",
+  "fps": 24,
+  "duration": 238.4,
+  "output_folder": "wangyang_mv",
+  "shots": [
+    {
+      "id": 1,
+      "start": 0.0,
+      "end": 8.988,
+      "duration": 8.988,
+      "section": "前奏",
+      "lyrics": [],
+      "summary_zh": "月光下無邊的夜海，霧氣漂浮，一滴水往天上落",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: An endless calm night sea under a huge pale moon, mist drifting over the water; the horizon dissolves into the sky so the sea seems to float.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Extreme wide shot, very slow push-in over the glassy moonlit sea, tiny ripples of silver light, mist rolling across the surface, a single drop of water falls upward from the sea into the sky.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 2,
+      "start": 8.988,
+      "end": 17.818,
+      "duration": 8.83,
+      "section": "前奏",
+      "lyrics": [],
+      "summary_zh": "臥室地板淹著靜止的海水，女主角睡著開始做夢",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: A dim bedroom at night where shallow, perfectly still sea water covers the floor, reflecting moonlight from the window; the woman lies asleep on the bed, dreaming.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Low angle gliding just above the water-covered bedroom floor, moonlight reflections rippling on the walls, a white curtain swaying slowly like seaweed.\n[4.4s-10.0s] Shot 2: Slow overhead shot of the woman asleep on the bed, her black hair spread on the pillow like ink in water, her eyelids flutter as she begins to dream.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 3,
+      "start": 17.818,
+      "end": 26.65,
+      "duration": 8.832,
+      "section": "主歌一",
+      "lyrics": [
+        "你又夢見那片海",
+        "潮水退得很遠"
+      ],
+      "summary_zh": "夢裡她赤腳站在夜晚沙灘，潮水退得很遠，露出鏡面般的沙地",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: In her dream, the woman stands barefoot on a vast wet beach at night as the tide pulls back far into the distance, leaving a mirror-like shore.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Medium shot from behind: the woman stands at the edge of the glistening sand, the sea retreating away from her feet in slow motion.\n[4.4s-10.0s] Shot 2: Extreme wide shot: the tide drawing back unnaturally far toward the horizon, exposing a shining mirror of wet sand that reflects the moon, the woman a tiny figure.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 4,
+      "start": 26.65,
+      "end": 34.933,
+      "duration": 8.283,
+      "section": "主歌一",
+      "lyrics": [
+        "他背對著你",
+        "一直走 一直走"
+      ],
+      "summary_zh": "男人背對著她一直往海走，倒影在沙上跟著走",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: Far out on the mirror-like sand, the man walks away from her toward the receding sea, never turning around.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Wide shot: the man walks away across the reflective sand toward the horizon, his reflection walking upside down beneath him.\n[3.9s-10.0s] Shot 2: Over-the-shoulder shot from behind the woman: she watches him grow smaller and smaller, mist swallowing him step by step.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 5,
+      "start": 34.933,
+      "end": 43.223,
+      "duration": 8.29,
+      "section": "主歌一",
+      "lyrics": [
+        "你沒有喊他",
+        "你怕他回頭"
+      ],
+      "summary_zh": "她想喊他卻沒出聲，空氣裡的水珠靜止漂浮",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The woman wants to call out to him but stays silent; the air around her is full of floating water droplets frozen in time.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Close-up of the woman's face in moonlight, her lips part as if to call out, then close; tears gather in her eyes; tiny water droplets hang motionless in the air around her.\n[3.9s-10.0s] Shot 2: Close-up of her hand rising slightly toward the distant figure, then slowly lowering; droplets drift past her fingers.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 6,
+      "start": 43.223,
+      "end": 53.156,
+      "duration": 9.933,
+      "section": "主歌一",
+      "lyrics": [
+        "看見你 還在等"
+      ],
+      "summary_zh": "她獨自在岸邊一直等，月亮和星空在頭上轉動",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: She keeps waiting alone on the endless shore while time passes around her.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-5.0s] Shot 1: Wide static shot: the woman stands alone on the vast shore while the moon moves across the sky in a time-lapse and stars wheel overhead; she does not move.\n[5.0s-10.0s] Shot 2: Medium side shot: wind lifts her hair and the hem of her dress, the distant horizon now empty, she keeps waiting.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 7,
+      "start": 53.156,
+      "end": 63.078,
+      "duration": 9.922,
+      "section": "主歌二",
+      "lyrics": [
+        "你把願望 折成紙船",
+        "一艘 一艘 放進水裡",
+        "跪在岸邊 數到天亮",
+        "沒有一艘 回來"
+      ],
+      "summary_zh": "她把願望折成發光的紙船，跪在岸邊一艘艘放進海裡，天色轉亮",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: At the waterline she folds her wishes into small white paper boats and sets them on the sea one by one; the night slowly turns toward dawn.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Close-up of the woman's hands folding a sheet of white paper into a small paper boat, faint glowing handwriting visible on the paper.\n[3.3s-6.7s] Shot 2: Low angle at water level: she kneels on the shore and places paper boats on the dark water one after another, a line of tiny boats drifting away, each glowing softly like a lantern.\n[6.7s-10.0s] Shot 3: Wide shot: she kneels at the shore as the sky behind the sea turns pale blue with dawn, the line of paper boats disappearing into the horizon.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 8,
+      "start": 63.078,
+      "end": 73.007,
+      "duration": 9.929,
+      "section": "主歌二／導歌",
+      "lyrics": [
+        "醒來的時候",
+        "孩子在身邊睡著",
+        "睫毛的形狀",
+        "和他一模一樣"
+      ],
+      "summary_zh": "沒有一艘紙船回來；她在淹水的臥室醒來，孩子睡在身邊",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket).\n\nScene overview: No boat returns; she wakes in the water-filled bedroom at dawn, her child asleep beside her.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Wide shot of the empty sea at dawn, no boats on the water, a single soaked paper boat lying flat on the wet sand.\n[3.3s-6.7s] Shot 2: The woman opens her eyes in bed in soft blue dawn light, shallow sea water on the bedroom floor reflecting the window; beside her the child sleeps peacefully.\n[6.7s-10.0s] Shot 3: Gentle close-up of the sleeping child's closed eyes and long eyelashes in soft morning light, a tender, quiet moment; the woman watches with a sad, loving expression.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 9,
+      "start": 73.007,
+      "end": 81.829,
+      "duration": 8.822,
+      "section": "副歌一",
+      "lyrics": [
+        "你追尋是一片的汪洋",
+        "是你流乾淚水的海洋"
+      ],
+      "summary_zh": "她站在汪洋中央的小沙洲，眼淚落下化成整片海",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The chorus opens into a vast surreal ocean: the sea rises around the woman and her tears become the ocean itself.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Extreme wide aerial shot: the woman stands on a small circle of sand in the middle of an endless ocean that stretches to every horizon under the moon.\n[2.8s-6.1s] Shot 2: Close-up: a single tear rolls down her cheek and falls; in slow motion the tear hits the water and spreads into a huge ring of light across the sea.\n[6.1s-10.0s] Shot 3: Wide shot: the sea level gently rises around her as she stands still, water reaching her knees, her ivory dress floating on the surface like petals.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 10,
+      "start": 81.829,
+      "end": 90.662,
+      "duration": 8.833,
+      "section": "副歌一",
+      "lyrics": [
+        "載浮著那條舟",
+        "是他的過去與你的模樣"
+      ],
+      "summary_zh": "一條小木舟在夜海上漂，載著他的身影和她的臉",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: A lone wooden boat drifts on the dark sea, carrying faint glowing images of the man's past and of the woman.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Wide shot: a small old wooden rowing boat drifts alone on the calm night sea, lit by moonlight, no one aboard.\n[2.8s-6.1s] Shot 2: Closer shot: inside the boat, translucent glowing images float like projected memories - the man's silhouette and the woman's face - rippling like reflections on water.\n[6.1s-10.0s] Shot 3: Low angle from the water surface: the boat slowly drifts away toward the horizon, its glowing memories trailing behind like mist.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 11,
+      "start": 90.662,
+      "end": 98.381,
+      "duration": 7.719,
+      "section": "間奏",
+      "lyrics": [],
+      "summary_zh": "海水從窗戶灌進臥室，房裡的東西漂浮起來",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: A dreamy transition: the ocean flows into the bedroom and the room begins to float.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Slow tracking shot: dark sea water pours silently through the bedroom window like a slow waterfall, moonlight shimmering through it.\n[3.9s-10.0s] Shot 2: Wide shot: pillows, a chair and paper boats float gently in the air of the flooded room, the sea surface hanging above like a ceiling.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 12,
+      "start": 98.381,
+      "end": 107.19,
+      "duration": 8.809,
+      "section": "主歌三",
+      "lyrics": [
+        "你摸著孩子的臉",
+        "像在摸他的臉",
+        "你對孩子說晚安",
+        "像在跟他說晚安"
+      ],
+      "summary_zh": "她溫柔撥開孩子額前的頭髮道晚安，窗上倒影浮現男人背影",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: At night in the quiet bedroom she tenderly says goodnight to her sleeping child, but in the window's reflection she sees the man.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Close-up: the woman's fingertips gently brush a strand of hair from the sleeping child's forehead, warm, tender and protective, deep blue night light.\n[4.4s-10.0s] Shot 2: She looks up at the dark window; in the glass reflection, instead of the room, she sees the faint silhouette of the man standing on a moonlit shore, his back turned.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 13,
+      "start": 107.19,
+      "end": 117.107,
+      "duration": 9.917,
+      "section": "導歌二",
+      "lyrics": [
+        "這樣不對",
+        "這樣不對",
+        "可是你停不下來",
+        "停不下來"
+      ],
+      "summary_zh": "她想停止思念，地上的海水卻把她拉回窗邊，越漲越高",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Tension rises: she tries to stop thinking of him, but the sea keeps rising and pulling her back.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Close-up: the woman shuts her eyes and slowly shakes her head, ripples of water spreading in the air around her face.\n[3.3s-6.7s] Shot 2: Medium shot: she walks away from the window, but the shallow sea on the floor flows backward, pulling her steps toward the window again.\n[6.7s-10.0s] Shot 3: Wide shot: the water in the room rises quickly to her waist and swirls slowly around her as she stands still, unable to stop.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 14,
+      "start": 117.107,
+      "end": 125.927,
+      "duration": 8.82,
+      "section": "副歌二",
+      "lyrics": [
+        "你追尋是一片的汪洋",
+        "是你流乾淚水的海洋"
+      ],
+      "summary_zh": "節奏落下，房間瞬間化成大海，她漂浮在發光的深藍海裡",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The beat drops: the whole room bursts into ocean and she is suddenly underwater in a vast glowing sea.\n\nStoryboard (4 shots, hard cuts landing on the beat):\n[0.0s-2.2s] Shot 1: The bedroom walls dissolve in an instant into open ocean, a huge wave of moonlit water rolling through the space.\n[2.2s-4.4s] Shot 2: Underwater: the woman floats weightless in deep blue water, her black hair and ivory dress swirling, shafts of moonlight cutting through.\n[4.4s-6.7s] Shot 3: Bioluminescent teal light pulses through the water around her in a steady rhythm, like a heartbeat.\n[6.7s-10.0s] Shot 4: She looks up toward the bright surface far above and reaches out one hand.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 15,
+      "start": 125.927,
+      "end": 134.737,
+      "duration": 8.81,
+      "section": "副歌二",
+      "lyrics": [
+        "載浮著那條舟",
+        "是他的過去與你的模樣"
+      ],
+      "summary_zh": "從海底看見水面上的小舟，她游上去卻總差一點碰不到",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: From underwater she sees the wooden boat above her on the surface, glowing with memories.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Low angle from deep underwater: the dark shape of the small wooden boat floats on the bright silver surface far above her.\n[2.8s-6.1s] Shot 2: Underwater medium shot: the woman swims upward toward the boat, trails of tiny glowing bubbles around her.\n[6.1s-10.0s] Shot 3: At the surface: she reaches the side of the boat but it drifts just out of reach, her fingertips touching only water.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 16,
+      "start": 134.737,
+      "end": 143.543,
+      "duration": 8.806,
+      "section": "器樂段",
+      "lyrics": [],
+      "summary_zh": "暗黑合成器獨奏：上百艘發光紙船從海面升上夜空",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Dark synth instrumental: the dream becomes stranger as hundreds of glowing paper boats rise from the sea into the night sky.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Wide shot: hundreds of glowing white paper boats lift off the black sea and float upward into the starry sky like lanterns.\n[2.8s-6.1s] Shot 2: Medium shot: the woman stands waist-deep in the sea, looking up as the paper boats drift past her face, teal and violet light flickering.\n[6.1s-10.0s] Shot 3: Extreme wide shot: the night sky filled with floating paper boats, reflected perfectly in the mirror-calm ocean.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 17,
+      "start": 143.543,
+      "end": 151.798,
+      "duration": 8.255,
+      "section": "器樂段",
+      "lyrics": [],
+      "summary_zh": "整片海倒過來懸在天上，她站在鏡面地上抬頭看",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: The sea turns upside down: the whole ocean hangs in the sky above the woman like a ceiling.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Slow rotating wide shot: the entire ocean flips upside down and hangs above the woman like a vast rippling ceiling, the moon glowing beneath it.\n[3.9s-10.0s] Shot 2: Medium shot: the woman stands on dry mirror-like ground looking up at the suspended sea, a single drop falling slowly toward her face.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 18,
+      "start": 151.798,
+      "end": 160.052,
+      "duration": 8.254,
+      "section": "橋段（男聲）",
+      "lyrics": [
+        "是我 先鬆開了手",
+        "把整片海 都留給了你"
+      ],
+      "summary_zh": "男聲橋段：他先鬆開她的手，海在兩人之間慢慢變寬",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: The man's side of the story: their hands slowly let go, and the sea opens between them.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: Extreme close-up in slow motion: the man's hand and the woman's hand, fingers intertwined, slowly loosening and slipping apart, water droplets falling between them.\n[3.9s-10.0s] Shot 2: Wide shot: the man, seen from behind, stands on one shore while the sea quietly spreads and widens between him and the woman's distant figure on the far shore.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 19,
+      "start": 160.052,
+      "end": 169.95,
+      "duration": 9.898,
+      "section": "橋段（男聲）",
+      "lyrics": [
+        "我不敢回頭",
+        "不敢看那條舟上",
+        "有我的樣子"
+      ],
+      "summary_zh": "他不敢回頭，海上的舟載著他自己的身影；沙上的倒影偷偷回頭",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: He keeps walking away without turning back, afraid to look at the boat that carries his own image.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Medium shot from behind: the man walks along the dark shore, shoulders tense; he slows as if about to turn around, but does not.\n[3.3s-6.7s] Shot 2: Wide shot: behind him on the sea, the small wooden boat drifts past, carrying a faint glowing image of his own silhouette.\n[6.7s-10.0s] Shot 3: Close shot of his reflection on the wet sand: the reflection turns its head to look back while the man himself keeps walking forward.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 20,
+      "start": 169.95,
+      "end": 178.756,
+      "duration": 8.806,
+      "section": "最終副歌",
+      "lyrics": [
+        "你追尋是一片的汪洋",
+        "是你流乾淚水的海洋"
+      ],
+      "summary_zh": "最終副歌：她站在汪洋中央的小舟上閉眼唱著，海面泛起光的波紋",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Final chorus: the woman stands in the small wooden boat in the middle of a vast glowing ocean, singing with all her heart.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Aerial shot circling the small wooden boat on an endless moonlit ocean, the woman standing in it, her dress and hair blowing in the wind.\n[2.8s-6.1s] Shot 2: Medium close-up: the woman sings with her eyes closed, emotional, tears shining, wind and sea spray around her.\n[6.1s-10.0s] Shot 3: Wide shot: waves of glowing teal light ripple outward from the boat across the whole ocean in time with the music.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 21,
+      "start": 178.756,
+      "end": 187.562,
+      "duration": 8.806,
+      "section": "最終副歌",
+      "lyrics": [
+        "載浮著那條舟",
+        "是他的過去與你的模樣"
+      ],
+      "summary_zh": "海面升起兩人過去的回憶光影，她一碰就碎成光點",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the man (a tall man in a long charcoal coat, always seen from behind or as a silhouette, his face never visible).\n\nScene overview: Memories rise from the sea around the boat: glowing translucent images of the man and the woman's past together.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Translucent glowing memories rise from the water around the boat like holograms: the couple walking together on a beach, the man's silhouette, the woman laughing.\n[2.8s-6.1s] Shot 2: Close-up: the woman reaches out and touches one glowing memory, and it breaks into drifting droplets of light.\n[6.1s-10.0s] Shot 3: Wide shot: the boat floats among dozens of fading memory images on the dark sea.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 22,
+      "start": 187.562,
+      "end": 196.362,
+      "duration": 8.8,
+      "section": "最終副歌",
+      "lyrics": [
+        "用最後的歌聲 繼續唱著"
+      ],
+      "summary_zh": "高潮：她用最後的歌聲唱著，海平線裂開第一道晨光",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: Climax: with her last song, the light peaks and the sky begins to break into dawn.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-2.8s] Shot 1: Low angle: the woman in the boat raises her face to the sky and sings, a huge wave of silver light rising behind her.\n[2.8s-6.1s] Shot 2: Extreme wide shot: the horizon cracks open with the first golden light of dawn, the night sea turning from indigo to gold.\n[6.1s-10.0s] Shot 3: Close-up of her face lit warmly by the sunrise, the tears drying, a calm, resolved expression.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 23,
+      "start": 196.362,
+      "end": 206.29,
+      "duration": 9.928,
+      "section": "尾奏",
+      "lyrics": [
+        "潮水回來了",
+        "這一次 你沒有等"
+      ],
+      "summary_zh": "潮水回來，沖掉男人的腳印；這一次她轉身離開，不再等",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: At dawn the tide comes back in; this time she does not wait, she turns and walks away.\n\nStoryboard (3 shots, hard cuts landing on the beat):\n[0.0s-3.3s] Shot 1: Wide shot at sunrise: the tide gently rushes back in over the sand, washing away a line of a man's footprints.\n[3.3s-6.7s] Shot 2: Medium shot: the woman stands at the waterline as the water returns to her ankles; she looks at the sea one last time.\n[6.7s-10.0s] Shot 3: She turns her back to the sea and walks away up the beach, calm and free, the sunrise behind her.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 24,
+      "start": 206.29,
+      "end": 214.014,
+      "duration": 7.724,
+      "section": "尾奏",
+      "lyrics": [],
+      "summary_zh": "早晨她拉開窗簾，地上的海水慢慢退去，她坐在熟睡的孩子身旁",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress); the child (a small child of about four in soft cotton pajamas, peacefully asleep under a blanket).\n\nScene overview: Morning: back in the bedroom, the sea water on the floor is quietly draining away.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-3.9s] Shot 1: The woman opens the bedroom curtains, warm morning sunlight floods in, the shallow sea water on the floor draining away and evaporating into sparkling mist.\n[3.9s-10.0s] Shot 2: She sits on the edge of the bed beside the sleeping child and gently rests her hand on the blanket, a small peaceful smile.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 25,
+      "start": 214.014,
+      "end": 222.363,
+      "duration": 8.349,
+      "section": "尾奏",
+      "lyrics": [],
+      "summary_zh": "窗台上一艘乾掉的紙船，她把它放出窗外讓風帶走",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nCharacters: the woman (a young East Asian woman in her late twenties with long loose black hair, wearing a pale ivory slip dress).\n\nScene overview: A single paper boat rests on the windowsill, dry, in the morning light.\n\nStoryboard (2 shots, hard cuts landing on the beat):\n[0.0s-4.4s] Shot 1: Close-up: a small white paper boat on the sunny windowsill, dry and still, dust floating in the sunbeam.\n[4.4s-10.0s] Shot 2: The woman picks up the paper boat, looks at it, and gently places it outside the open window where the breeze carries it away.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 26,
+      "start": 222.363,
+      "end": 230.754,
+      "duration": 8.391,
+      "section": "尾奏",
+      "lyrics": [],
+      "summary_zh": "紙船乘著風飄過陽光下的海面",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: The paper boat drifts on the wind over the sea toward the horizon.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Long slow tracking shot following the small white paper boat as it floats on the breeze high above a calm, sunlit sea, gliding toward the bright horizon.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    },
+    {
+      "id": 27,
+      "start": 230.754,
+      "end": 238.4,
+      "duration": 7.646,
+      "section": "尾奏",
+      "lyrics": [],
+      "summary_zh": "結尾：日出下平靜的海，畫面慢慢化進白霧",
+      "prompt": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal and indigo palette with pale silver highlights, soft haze, slow graceful motion, shallow depth of field, gentle film grain, sea water behaving like a dream (flowing into rooms, hanging in the air), melancholic and intimate mood.\n\nScene overview: Ending: the calm sea at sunrise, gentle waves, slowly fading into white mist.\n\nStoryboard (one continuous shot):\n[0.0s-10.0s] Extreme wide static shot of the calm sea at sunrise, gentle waves rolling onto the empty shore, the image slowly dissolving into soft white mist.\n\nCamera: slow, fluid movement, gentle drifting push-ins and glides, no shaky handheld.\n\nAudio: only a soft, low ocean ambience; no music, no singing, no dialogue.\n\nNo text, subtitles, logos or watermarks of any kind; no cartoon or anime rendering; keep a real live-action texture."
+    }
+  ]
+}
