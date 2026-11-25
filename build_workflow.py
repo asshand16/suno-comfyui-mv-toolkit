@@ -146,7 +146,7 @@ def main():
             "- 改畫面：直接改「③」裡那一段的文字\n\n"
             "### 中斷後接續\n- `clip_no` 設下一個還沒做的段，批次數量設剩下的段數\n\n"
             "### 速度／顯存\n- Turbo（8 步）預設開；關掉 = 20 步，畫質較好，約慢 2.5 倍\n"
-            "- 太慢或爆顯存：Resolution Selector 的 megapixels 從 **0.98** 改成 **0.6** 或 **0.4**\n\n"
+            "- 解析度：Resolution Selector 預設 megapixels **0.3**（736×416）；要更清楚可改 0.6（1056×608）或 0.98（1344×768），會慢很多\n\n"
             f"### 剪成整首\n- `python assemble_mv.py --project \"{os.path.abspath(a.project)}\" --subs`")
     w["last_node_id"], w["last_link_id"] = nid[0], lid[0]
 

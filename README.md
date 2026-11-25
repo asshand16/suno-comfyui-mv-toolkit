@@ -36,7 +36,7 @@ Suno 歌曲資料（歌詞、節拍、逐字時間）
 - **Python 3.8+**
 - **ffmpeg**（剪輯用；Windows：`winget install ffmpeg`）
 
-在 RTX 3090 24GB 上，1344×768、Turbo 8 步，每段約 7～8 分鐘。
+在 RTX 3090 24GB 上，預設 736×416（megapixels 0.3）、Turbo 8 步，每段約 7～8 分鐘。
 
 ---
 
@@ -118,7 +118,7 @@ CreateList 一個最多 10 個輸入，所以每 9 段一組再合併（最多 9
 4. 輸出到 `ComfyUI/output/<folder>/shot_01_00001_.mp4` …
 
 - **重抽某段**：`clip_no` 設那段、`reroll` +1、批次數量 1
-- **太慢／爆顯存**：Resolution Selector 的 megapixels 從 0.98 改成 0.6 或 0.4
+- **解析度**：Resolution Selector 預設 megapixels 0.3（736×416）；要更清楚改 0.6（1056×608）或 0.98（1344×768），會慢很多
 - **Turbo**：預設 8 步；關掉 = 20 步，畫質好一些，約慢 2.5 倍
 
 ### 6. 剪成 MV
