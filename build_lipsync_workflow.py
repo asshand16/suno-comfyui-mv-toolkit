@@ -2,24 +2,30 @@
 """
 產生「對嘴」ComfyUI 工作流程（MiniMax H3 ref2va，全部內建節點）。
 
-人物參考圖固定長相，人聲軌錨定在第 0 格，讓嘴型跟著歌聲動。
-輸出存成 output/<輸出資料夾>/shot_XX_000NN_.mp4，和一般片段同一個資料夾，
-assemble_mv.py 會自動用編號最新的版本，所以對嘴版會直接取代原本那段。
+這是「第二階段」：一般段落先跑完、剪好，再挑想對嘴的段落跑這個。
+
+做法（從原本的片段重新生成）：
+  - 找出那段原本生成好的片段，自動偵測裡面的硬切點
+  - 第 0 格和每個切點後的第一格當錨點（MiniMaxH3AddGuide），場景、人物、構圖、剪接點都跟原本一樣
+  - 那段的人聲（Demucs 分離後切出 10 秒）錨定在第 0 格，動作和嘴型重新生成、跟著歌聲
+  - 提示詞沿用原本那段：分鏡時間改成偵測到的切點，加上歌詞和對嘴說明，「不要唱歌」改成「保留給的人聲」
+
+輸出存到另一個資料夾 output/<輸出資料夾>_lipsync/shot_XX_000NN_.mp4，不會蓋掉原本的段落；
+剪輯時用 assemble_mv.py --lipsync 5,9 指定哪幾段換成對嘴版。
 
 用法：
-  python build_lipsync_workflow.py <專案> --shots 9,10,15 --face 臉部特寫.png [--body 全身.png]
-                                   [--singer "the woman"] [--vocals 人聲.wav] [--song 原曲.mp3]
+  python build_lipsync_workflow.py <專案> --shots 5,9 [--face 臉部特寫.png] [--prompts 自訂.json]
 
-  --shots   要對嘴的段落編號（逗號分隔）
-  --face    人物臉部參考圖（正面特寫最好），必填
-  --body    第二張參考圖（服裝、全身），選填
-  --singer  提示詞裡唱歌的角色名稱，要和 shots.json 的 Characters 一樣（預設 the woman）
-  --vocals  已經分離好的人聲檔；沒給就找 <專案>/stems/vocals.wav，再沒有就用 Demucs 從原曲分離
+  --shots    要對嘴的段落編號（逗號分隔，一次最多 10 段）
+  --face     選用：再加一張臉部參考圖，讓長相更穩定
+  --prompts  選用：自訂對嘴提示詞 JSON {"5": "…"}；沒寫到的段落自動轉換
+  --vocals   已經分離好的人聲檔；沒給就找 <專案>/stems/**/vocals.wav，再沒有就用 Demucs 從原曲分離
+  --clips    原本片段的資料夾（預設 ComfyUI/output/<輸出資料夾>）
 
 產出：
   <專案>/<歌名>_對嘴_MiniMaxH3_本機.json     拖進 ComfyUI 用
   <專案>/lipsync_api.json                     API 格式（給程式直接送出）
-  ComfyUI/input/<輸出資料夾>_vocals.wav、_lip_face.png、_lip_body.png
+  ComfyUI/input/<輸出資料夾>_vocals.wav、<輸出資料夾>_lip_sXX_fNNN.png（錨點畫面）
 """
 import argparse, json, os, re, shutil, subprocess, sys
 
@@ -205,30 +211,46 @@ def find_char(chars_line, singer, all_prompts):
     return ""
 
 
-def lipsync_prompt(shot, singer, desc, refs, all_prompts):
-    style, chars, overview, neg = parse_prompt(shot.get("prompt", ""))
-    desc = desc or find_char(chars, singer, all_prompts)
-    pics = "<Picture 1> and <Picture 2> show" if refs == 2 else "<Picture 1> shows"
-    who = f"{singer} ({desc})" if desc else singer
+def lipsync_prompt(shot, cuts_sec, extra_ref=False):
+    """把原本那段的提示詞改成對嘴版：分鏡時間改成偵測到的切點、加上歌詞和對嘴說明。"""
+    paras = [x.strip() for x in shot.get("prompt", "").split("\n\n") if x.strip()]
     lyr = " / ".join(shot.get("lyrics", [])) or "(humming)"
-    return "\n\n".join([
-        style,
-        f"{pics} {who}. Keep the face, hair and outfit exactly as in the reference{'s' if refs == 2 else ''}.",
-        f"Scene overview: {overview} {singer[0].upper() + singer[1:]} faces the camera and sings the lyrics of the "
-        f"soundtrack with deep emotion; the lips, jaw and breathing are precisely synchronized to the sung vocal "
-        f"in the audio: the mouth opens on held notes, shapes each syllable, and closes during pauses.",
-        f"Lyrics sung in this shot (Mandarin): {lyr}",
-        "Storyboard (1 continuous shot):\n[0.0s-10.0s] Shot 1: slow push-in from a medium close-up to a close-up "
-        "of the singer's face, the face clearly visible and well lit the whole time.",
-        "Camera: slow, smooth push-in, no cuts, no shaky handheld.",
-        "Audio: keep the given vocal exactly as it is; no added music, no other voices.",
-        neg,
-    ])
+    sing = (f"The singer sings the Mandarin lyrics of the soundtrack ({lyr}); her lips, jaw and breathing are "
+            "precisely synchronized to the sung vocal in the audio: the mouth shapes each syllable, opens on held "
+            "notes, and closes during pauses. Keep every person, place and object exactly as in the anchored frames.")
+    if extra_ref:
+        sing += " <Picture 1> shows the singer's face; use it only to keep her face identical."
+    out, added = [], False
+    for p in paras:
+        if p.startswith("Storyboard"):
+            lines = p.split("\n")
+            # 原本的分鏡文字不一定和實際生成的畫面一致，所以改成「延續錨定畫面」，避免和錨點打架
+            edges = [0.0] + list(cuts_sec) + [10.0]
+            n_sh = len(edges) - 1
+            body = "\n".join(
+                f"[{edges[n]:.1f}s-{edges[n + 1]:.1f}s] Shot {n + 1}: continue exactly from the anchored frame at "
+                f"{edges[n]:.1f}s (same framing, place, lighting and people) with gentle natural motion; whenever the "
+                f"singer's face is visible, her lips move in sync with the vocal." for n in range(n_sh))
+            out.append(f"Storyboard ({n_sh} shot{'s' if n_sh > 1 else ''}"
+                       + (", hard cuts landing on the beat" if n_sh > 1 else ", no cuts") + "):\n" + body)
+        elif p.startswith("Audio:"):
+            out.append("Audio: keep the given vocal exactly as it is; no added music, no other voices.")
+        else:
+            out.append(p)
+        if p.startswith("Scene overview") and not added:
+            out.append(sing); added = True
+    if not added:
+        out.insert(min(2, len(out)), sing)
+    return "\n\n".join(out)
 
 
 # ---------------------------------------------------------------- 素材
 def comfy_input_dir():
     return os.environ.get("COMFYUI_INPUT", os.path.expanduser(os.path.join("~", "Documents", "ComfyUI", "input")))
+
+
+def comfy_output_dir():
+    return os.environ.get("COMFYUI_OUTPUT", os.path.expanduser(os.path.join("~", "Documents", "ComfyUI", "output")))
 
 
 def find_song(project, song_arg):
@@ -243,23 +265,52 @@ def find_song(project, song_arg):
 def ensure_vocals(project, a):
     if a.vocals:
         return a.vocals
-    for cand in (os.path.join(project, "stems", "vocals.wav"),):
-        if os.path.exists(cand):
-            return cand
-    found = [os.path.join(r, f) for r, _, fs in os.walk(os.path.join(project, "stems")) for f in fs if f == "vocals.wav"] \
-        if os.path.isdir(os.path.join(project, "stems")) else []
+    stems = os.path.join(project, "stems")
+    found = [os.path.join(r, f) for r, _, fs in os.walk(stems) for f in fs if f == "vocals.wav"] \
+        if os.path.isdir(stems) else []
     if found:
         return found[0]
     song = find_song(project, a.song)
     if not song:
         sys.exit("找不到原曲，請用 --song 指定，或用 --vocals 給分離好的人聲")
     print(f"用 Demucs 分離人聲：{song}")
-    out = os.path.join(project, "stems")
-    r = subprocess.run([sys.executable, "-m", "demucs", "--two-stems", "vocals", "-n", "htdemucs", "-o", out, song])
+    r = subprocess.run([sys.executable, "-m", "demucs", "--two-stems", "vocals", "-n", "htdemucs", "-o", stems, song])
     if r.returncode:
         sys.exit("Demucs 失敗；請先 pip install demucs，或用 --vocals 指定人聲檔")
-    found = [os.path.join(rr, f) for rr, _, fs in os.walk(out) for f in fs if f == "vocals.wav"]
-    return found[0]
+    return [os.path.join(rr, f) for rr, _, fs in os.walk(stems) for f in fs if f == "vocals.wav"][0]
+
+
+CLIP_PAT = re.compile(r"shot_(\d{2})_(\d+)_?\.(mp4|mov|mkv|webm)$", re.I)
+
+
+def newest_clips(folder):
+    best = {}
+    for f in os.listdir(folder) if os.path.isdir(folder) else []:
+        m = CLIP_PAT.search(f)
+        if m and (int(m.group(1)) not in best or int(m.group(2)) > best[int(m.group(1))][0]):
+            best[int(m.group(1))] = (int(m.group(2)), os.path.join(folder, f))
+    return {k: v[1] for k, v in best.items()}
+
+
+def detect_cuts(path, used_sec, threshold=0.15, max_cuts=2):
+    """回傳剪輯會用到的範圍內，硬切點後第一格的影格編號。"""
+    r = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vf", f"select='gt(scene,{threshold})',metadata=print:file=-",
+                        "-an", "-f", "null", "-"], capture_output=True, text=True)
+    times = [float(x) for x in re.findall(r"pts_time:([0-9.]+)", r.stdout)]
+    frames = [round(t * FPS) for t in times if 0.5 < t < used_sec - 0.5]
+    return frames[:max_cuts]
+
+
+def probe_size(path):
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v", "-show_entries", "stream=width,height",
+                        "-of", "csv=p=0", path], capture_output=True, text=True)
+    w, h = r.stdout.strip().split(",")[:2]
+    return int(w), int(h)
+
+
+def grab_frame(path, n, dst):
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", path, "-vf", f"select=eq(n\\,{n})", "-frames:v", "1", dst],
+                   check=True)
 
 
 # ---------------------------------------------------------------- 主程式
@@ -267,13 +318,11 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("project")
     ap.add_argument("--shots", required=True)
-    ap.add_argument("--face", required=True)
-    ap.add_argument("--body", default=None)
-    ap.add_argument("--singer", default="the woman")
-    ap.add_argument("--desc", default="", help="角色外型（英文）；沒給就從提示詞的 Characters 找")
+    ap.add_argument("--face", default=None)
     ap.add_argument("--vocals", default=None)
     ap.add_argument("--song", default=None)
-    ap.add_argument("--megapixels", type=float, default=0.3)
+    ap.add_argument("--clips", default=None)
+    ap.add_argument("--prompts", default=None)
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
 
@@ -284,34 +333,55 @@ def main():
     bad = [i for i in ids if i not in byid]
     if bad:
         sys.exit(f"沒有這些段：{bad}")
+    if len(ids) > 10:
+        sys.exit("一次最多 10 段，請分批產生")
     folder = plan.get("output_folder") or "mv"
     title = plan.get("song", "MV")
     k = len(ids)
 
-    # 素材放進 ComfyUI/input
+    clips_dir = a.clips or os.path.join(comfy_output_dir(), folder)
+    clips = newest_clips(clips_dir)
+    missing = [i for i in ids if i not in clips]
+    if missing:
+        sys.exit(f"這些段還沒有原本的片段（{clips_dir}）：{', '.join(f'{i:02d}' for i in missing)}\n"
+                 "對嘴是第二階段，請先用一般工作流程把這幾段跑出來")
+
     inp = comfy_input_dir()
     os.makedirs(inp, exist_ok=True)
     voc_name = f"{folder}_vocals.wav"
-    vocals = ensure_vocals(P, a)
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", vocals, "-ar", "48000", "-ac", "2",
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", ensure_vocals(P, a), "-ar", "48000", "-ac", "2",
                     os.path.join(inp, voc_name)], check=True)
-    face_name = f"{folder}_lip_face{os.path.splitext(a.face)[1]}"
-    shutil.copyfile(a.face, os.path.join(inp, face_name))
-    body_name = None
-    if a.body:
-        body_name = f"{folder}_lip_body{os.path.splitext(a.body)[1]}"
-        shutil.copyfile(a.body, os.path.join(inp, body_name))
-    refs = 2 if body_name else 1
+    face_name = None
+    if a.face:
+        face_name = f"{folder}_lip_face{os.path.splitext(a.face)[1]}"
+        shutil.copyfile(a.face, os.path.join(inp, face_name))
 
-    all_prompts = [s.get("prompt", "") for s in plan["shots"]]
+    # 每段的錨點：第 0 格 + 最多兩個切點；沒有切點時重複上一個錨點（同一格、同一張圖）
+    W, H = probe_size(clips[ids[0]])
+    anchors = []   # [(f0_name, (cutA_frame, cutA_name), (cutB_frame, cutB_name))]
+    for i in ids:
+        used = byid[i]["duration"]
+        cuts = detect_cuts(clips[i], used)
+        names = []
+        for n in [0] + cuts:
+            nm = f"{folder}_lip_s{i:02d}_f{n:03d}.png"
+            grab_frame(clips[i], n, os.path.join(inp, nm))
+            names.append((n, nm))
+        while len(names) < 3:
+            names.append(names[-1])
+        anchors.append(names)
+        print(f"  第 {i:02d} 段：{os.path.basename(clips[i])}，切點 {', '.join(f'{c / FPS:.2f}s' for c in cuts) or '無'}")
+
+    custom = json.load(open(a.prompts, encoding="utf-8")) if a.prompts else {}
     cfg_path = os.path.join(P, "分鏡設定.json")
     cfg = json.load(open(cfg_path, encoding="utf-8")) if os.path.exists(cfg_path) else {}
     prompts = []
-    for i in ids:
-        override = cfg.get("shots", {}).get(str(i), {}).get("lipsync_prompt")
-        prompts.append(override or lipsync_prompt(byid[i], a.singer, a.desc, refs, all_prompts))
+    for i, an in zip(ids, anchors):
+        cuts_sec = sorted({n / FPS for n, _ in an[1:] if n > 0})
+        prompts.append(custom.get(str(i)) or cfg.get("shots", {}).get(str(i), {}).get("lipsync_prompt")
+                       or lipsync_prompt(byid[i], cuts_sec, bool(face_name)))
 
-    def piecewise(vals, fmt):
+    def piecewise(vals, fmt=str):
         return " + ".join(f"(a == {n}) * {fmt(v)}" for n, v in enumerate(vals, 1))
 
     mmss = lambda x: f"{int(x // 60)}:{int(x % 60):02d}"
@@ -336,44 +406,63 @@ def main():
 
     # ② 選段
     X1, Y1 = -2610, 1120
-    g.group("② 選段（每次 Run 會自動 +1）", X1, Y1, 820, 1180)
+    g.group("② 選段（每次 Run 會自動 +1）", X1, Y1, 820, 1360)
     g.add("lip_no", "PrimitiveInt", [X1 + 30, Y1 + 80], [360, 82], "lip_no（第幾個對嘴段）", value=1, _control="increment")
     g.add("reroll", "PrimitiveInt", [X1 + 30, Y1 + 200], [360, 82], "reroll（重抽時 +1）", value=0)
     g.add("secs", "PrimitiveFloat", [X1 + 30, Y1 + 320], [360, 58], "每段秒數", value=10.0)
-    g.add("idx", "ComfyMathExpression", [X1 + 430, Y1 + 80], [360, 110], "清單索引", expression=f"max(0, min({k - 1}, a - 1))")
-    g.add("n", "ComfyMathExpression", [X1 + 430, Y1 + 220], [360, 110], "對嘴段（1～%d）" % k, expression=f"max(1, min({k}, a))")
-    g.add("shot", "ComfyMathExpression", [X1 + 430, Y1 + 360], [360, 150], "段落編號",
-          expression=piecewise(ids, str))
-    g.add("start", "ComfyMathExpression", [X1 + 430, Y1 + 540], [360, 150], "人聲起點（秒）",
-          expression=piecewise([byid[i]["start"] for i in ids], lambda v: f"{v:.3f}"))
-    g.add("seed", "ComfyMathExpression", [X1 + 430, Y1 + 720], [360, 110], "種子 seed",
-          expression=f"{SEED_BASE} + a * 1000 + 500 + b")
-    g.add("fname", "StringFormat", [X1 + 430, Y1 + 860], [360, 90], "檔名", f_string=f"{folder}/shot_{{a:02d}}")
     g.add("frames", "ComfyMathExpression", [X1 + 30, Y1 + 420], [360, 130], "影格數（17k+5）",
           expression="max(5, round(a * 24)) + (5 - (max(5, round(a * 24)) % 17)) % 17")
     g.add("adur", "ComfyMathExpression", [X1 + 30, Y1 + 580], [360, 110], "人聲長度（秒）", expression="a / 24")
-    g.add("res", "ResolutionSelector", [X1 + 30, Y1 + 720], [360, 130], aspect_ratio="16:9 (Widescreen)",
-          megapixels=a.megapixels, multiple=32)
+    g.add("idx", "ComfyMathExpression", [X1 + 430, Y1 + 80], [360, 110], "清單索引", expression=f"max(0, min({k - 1}, a - 1))")
+    g.add("n", "ComfyMathExpression", [X1 + 430, Y1 + 220], [360, 110], f"對嘴段（1～{k}）", expression=f"max(1, min({k}, a))")
+    g.add("shot", "ComfyMathExpression", [X1 + 430, Y1 + 360], [360, 130], "段落編號", expression=piecewise(ids))
+    g.add("start", "ComfyMathExpression", [X1 + 430, Y1 + 520], [360, 130], "人聲起點（秒）",
+          expression=piecewise([byid[i]["start"] for i in ids], lambda v: f"{v:.3f}"))
+    g.add("cutA", "ComfyMathExpression", [X1 + 430, Y1 + 680], [360, 130], "錨點 2 的影格",
+          expression=piecewise([an[1][0] for an in anchors]))
+    g.add("cutB", "ComfyMathExpression", [X1 + 430, Y1 + 840], [360, 130], "錨點 3 的影格",
+          expression=piecewise([an[2][0] for an in anchors]))
+    g.add("seed", "ComfyMathExpression", [X1 + 430, Y1 + 1000], [360, 110], "種子 seed",
+          expression=f"{SEED_BASE} + a * 1000 + 700 + b")
+    g.add("fname", "StringFormat", [X1 + 430, Y1 + 1140], [360, 90], "檔名", f_string=f"{folder}_lipsync/shot_{{a:02d}}")
+    g.add("w", "PrimitiveInt", [X1 + 30, Y1 + 720], [360, 82], "寬（和原片段一樣）", value=W)
+    g.add("h", "PrimitiveInt", [X1 + 30, Y1 + 840], [360, 82], "高（和原片段一樣）", value=H)
     g.link("lip_no", 0, "idx", "values.a"); g.link("lip_no", 0, "n", "values.a")
-    g.link("n", 1, "shot", "values.a"); g.link("n", 1, "start", "values.a")
+    for key in ("shot", "start", "cutA", "cutB"):
+        g.link("n", 1, key, "values.a")
     g.link("shot", 1, "seed", "values.a"); g.link("reroll", 0, "seed", "values.b")
     g.link("shot", 1, "fname", "values.a")
     g.link("secs", 0, "frames", "values.a"); g.link("frames", 1, "adur", "values.a")
 
-    # ③ 參考素材
+    # ③ 原片段的錨點畫面＋人聲
     X2, Y2 = -1790, 1120
-    g.group("③ 參考素材（人物圖、人聲）", X2, Y2, 1010, 1180, "#8A8")
-    g.add("face", "LoadImage", [X2 + 30, Y2 + 80], [460, 420], "<Picture 1> 臉部特寫", image=face_name)
-    if body_name:
-        g.add("body", "LoadImage", [X2 + 520, Y2 + 80], [460, 420], "<Picture 2> 服裝／全身", image=body_name)
-    g.add("vocals", "LoadAudio", [X2 + 30, Y2 + 540], [460, 140], "整首人聲（Demucs 分離）", audio=voc_name)
-    g.add("trim", "TrimAudioDuration", [X2 + 520, Y2 + 540], [360, 106], "切出這段的人聲")
+    g.group("③ 原片段的錨點畫面（第 0 格、切點後第一格）＋人聲", X2, Y2, 1590, 200 + k * 300, "#8A8")
+    lists = {}
+    for col, (key, lab) in enumerate([("f0", "錨點 1：第 0 格"), ("fa", "錨點 2：切點後"), ("fb", "錨點 3：切點後")]):
+        lk = g.add(f"list_{key}", "CreateList", [X2 + 30 + col * 380 + 1140 - 1140, Y2 + 80 + k * 300], [300, 200],
+                   f"Create List（{lab}）")
+        lists[key] = lk
+    for j, (i, an) in enumerate(zip(ids, anchors)):
+        for col, key in enumerate(("f0", "fa", "fb")):
+            n, nm = an[col]
+            node = g.add(f"img_{j}_{key}", "LoadImage", [X2 + 30 + col * 380, Y2 + 60 + j * 300], [360, 280],
+                         f"第 {i:02d} 段・第 {n} 格", image=nm)
+            g.link(node, 0, lists[key], f"inputs.input{j}")
+    picks = {}
+    for col, key in enumerate(("f0", "fa", "fb")):
+        picks[key] = g.add(f"pick_{key}", "GetItemFromList", [X2 + 30 + col * 380, Y2 + 300 + k * 300], [300, 80],
+                           "取出這段的錨點", index=0)
+        g.link(lists[key], 0, picks[key], "list"); g.link("idx", 1, picks[key], "index")
+    g.add("vocals", "LoadAudio", [X2 + 1180, Y2 + 60], [380, 140], "整首人聲（Demucs 分離）", audio=voc_name)
+    g.add("trim", "TrimAudioDuration", [X2 + 1180, Y2 + 240], [380, 106], "切出這段的人聲")
     g.link("vocals", 0, "trim", "audio"); g.link("start", 0, "trim", "start_index"); g.link("adur", 0, "trim", "duration")
+    if face_name:
+        g.add("face", "LoadImage", [X2 + 1180, Y2 + 400], [380, 300], "<Picture 1> 臉部參考（選用）", image=face_name)
 
     # ④ 提示詞
-    X3, Y3 = -1790, 2340
+    X3, Y3 = -1790, Y2 + 260 + k * 300 + 160
     rows = (k + 1) // 2
-    g.group(f"④ {k} 段對嘴提示詞（可直接改文字）", X3, Y3, 1590, 120 + rows * 420, "#A88")
+    g.group(f"④ {k} 段對嘴提示詞（可直接改文字）", X3, Y3, 1960, 120 + rows * 420, "#A88")
     pkeys = []
     for j, (i, p) in enumerate(zip(ids, prompts)):
         r, c = divmod(j, 2)
@@ -381,28 +470,20 @@ def main():
         t = f"對嘴 {j + 1}｜第 {i:02d} 段｜{mmss(s['start'])}–{mmss(s['end'])}｜{' / '.join(s.get('lyrics', []))}"
         pkeys.append(g.add(f"p{j}", "PrimitiveStringMultiline", [X3 + 30 + c * 780, Y3 + 80 + r * 420], [740, 380],
                            t[:80], value=p))
-    chunks = [pkeys[x:x + 9] for x in range(0, k, 9)]
-    lists = []
-    for ci, ch in enumerate(chunks):
-        lk = g.add(f"list{ci}", "CreateList", [X3 + 1620, Y3 + 80 + ci * 290], [300, 260], f"Create List（{ci * 9 + 1}～{ci * 9 + len(ch)}）")
-        for j, pk in enumerate(ch):
-            g.link(pk, 0, lk, f"inputs.input{j}")
-        lists.append(lk)
-    if len(lists) > 1:
-        top = g.add("listall", "CreateList", [X3 + 1620, Y3 + 80 + len(lists) * 290], [300, 160], "Create List（合併）")
-        for j, lk in enumerate(lists):
-            g.link(lk, 0, top, f"inputs.input{j}")
-    else:
-        top = lists[0]
-    g.add("pick", "GetItemFromList", [X3 + 1620, Y3 + 80 + (len(lists) + 1) * 290], [300, 80], "取出這段提示詞", index=0)
-    g.link(top, 0, "pick", "list"); g.link("idx", 1, "pick", "index")
+    plist = g.add("plist", "CreateList", [X3 + 1620, Y3 + 80], [300, 260], "Create List（提示詞）")
+    for j, pk in enumerate(pkeys):
+        g.link(pk, 0, plist, f"inputs.input{j}")
+    g.add("pick", "GetItemFromList", [X3 + 1620, Y3 + 380], [300, 80], "取出這段提示詞", index=0)
+    g.link(plist, 0, "pick", "list"); g.link("idx", 1, "pick", "index")
 
     # ⑤ 生成
     X4, Y4 = 400, 1120
-    g.group("⑤ 生成與輸出", X4, Y4, 1210, 1300, "#88A")
-    g.add("r2v", "MiniMaxH3ReferenceToVideo", [X4 + 30, Y4 + 80], [420, 260], prompt="", width=736, height=416,
+    g.group("⑤ 生成與輸出", X4, Y4, 1210, 1500, "#88A")
+    g.add("r2v", "MiniMaxH3ReferenceToVideo", [X4 + 30, Y4 + 80], [420, 260], prompt="", width=W, height=H,
           length=243, ref_image_size="match")
-    g.add("guide", "MiniMaxH3AddGuide", [X4 + 30, Y4 + 380], [420, 170], "人聲錨定在第 0 格", frame_idx=0)
+    g.add("g0", "MiniMaxH3AddGuide", [X4 + 30, Y4 + 380], [420, 170], "錨點 1＋人聲（第 0 格）", frame_idx=0)
+    g.add("ga", "MiniMaxH3AddGuide", [X4 + 30, Y4 + 580], [420, 170], "錨點 2（切點後第一格）", frame_idx=0)
+    g.add("gb", "MiniMaxH3AddGuide", [X4 + 30, Y4 + 780], [420, 170], "錨點 3（切點後第一格）", frame_idx=0)
     g.add("noise", "RandomNoise", [X4 + 480, Y4 + 80], [320, 82], noise_seed=SEED_BASE)
     g.add("ksel", "KSamplerSelect", [X4 + 480, Y4 + 200], [320, 58], sampler_name="res_multistep")
     g.add("sched", "BasicScheduler", [X4 + 480, Y4 + 300], [320, 106], scheduler="simple", steps=4, denoise=1.0)
@@ -411,15 +492,19 @@ def main():
     g.add("dec", "VAEDecode", [X4 + 830, Y4 + 240], [240, 46])
     g.add("adec", "VAEDecodeAudio", [X4 + 830, Y4 + 320], [240, 46])
     g.add("cv", "CreateVideo", [X4 + 830, Y4 + 400], [300, 150], fps=FPS)
-    g.add("save", "SaveVideo", [X4 + 30, Y4 + 600], [1140, 640], filename_prefix=f"{folder}/shot")
+    g.add("save", "SaveVideo", [X4 + 30, Y4 + 1000], [1140, 460], filename_prefix=f"{folder}_lipsync/shot",
+          format="auto", codec="auto")
     for src, slot, dst, nm in [
         ("clip", 0, "r2v", "clip"), ("vae", 0, "r2v", "vae"), ("avae", 0, "r2v", "audio_vae"),
-        ("face", 0, "r2v", "ref_images.ref_image_0"), ("pick", 0, "r2v", "prompt"),
-        ("res", 0, "r2v", "width"), ("res", 1, "r2v", "height"), ("frames", 1, "r2v", "length"),
-        ("r2v", 0, "guide", "positive"), ("r2v", 1, "guide", "latent"), ("avae", 0, "guide", "audio_vae"),
-        ("trim", 0, "guide", "audio"),
+        ("pick", 0, "r2v", "prompt"), ("w", 0, "r2v", "width"), ("h", 0, "r2v", "height"), ("frames", 1, "r2v", "length"),
+        ("r2v", 0, "g0", "positive"), ("r2v", 1, "g0", "latent"), ("vae", 0, "g0", "vae"), ("avae", 0, "g0", "audio_vae"),
+        ("pick_f0", 0, "g0", "image"), ("trim", 0, "g0", "audio"),
+        ("g0", 0, "ga", "positive"), ("r2v", 1, "ga", "latent"), ("vae", 0, "ga", "vae"), ("avae", 0, "ga", "audio_vae"),
+        ("pick_fa", 0, "ga", "image"), ("cutA", 1, "ga", "frame_idx"),
+        ("ga", 0, "gb", "positive"), ("r2v", 1, "gb", "latent"), ("vae", 0, "gb", "vae"), ("avae", 0, "gb", "audio_vae"),
+        ("pick_fb", 0, "gb", "image"), ("cutB", 1, "gb", "frame_idx"),
         ("seed", 1, "noise", "noise_seed"), ("sw_model", 0, "sched", "model"), ("sw_steps", 0, "sched", "steps"),
-        ("sw_model", 0, "guider", "model"), ("guide", 0, "guider", "conditioning"),
+        ("sw_model", 0, "guider", "model"), ("gb", 0, "guider", "conditioning"),
         ("noise", 0, "sampler", "noise"), ("guider", 0, "sampler", "guider"), ("ksel", 0, "sampler", "sampler"),
         ("sched", 0, "sampler", "sigmas"), ("r2v", 1, "sampler", "latent_image"),
         ("sampler", 0, "dec", "samples"), ("vae", 0, "dec", "vae"),
@@ -428,33 +513,34 @@ def main():
         ("cv", 0, "save", "video"), ("fname", 0, "save", "filename_prefix"),
     ]:
         g.link(src, slot, dst, nm)
-    if body_name:
-        g.link("body", 0, "r2v", "ref_images.ref_image_1")
+    if face_name:
+        g.link("face", 0, "r2v", "ref_images.ref_image_0")
 
-    lines = "\n".join(f"| {j + 1} | {i:02d} | {mmss(byid[i]['start'])} | {' / '.join(byid[i].get('lyrics', [])) or '（無）'} |"
-                      for j, i in enumerate(ids))
+    table = "\n".join(
+        f"| {j + 1} | {i:02d} | {mmss(byid[i]['start'])} | {', '.join(f'{n / FPS:.2f}s' for n, _ in an[1:] if n) or '無'} | "
+        f"{' / '.join(byid[i].get('lyrics', [])) or '（無）'} |" for j, (i, an) in enumerate(zip(ids, anchors)))
     g.add("note", "MarkdownNote", [-2610, -40], [760, 1080], "使用說明（先看這裡）", text=(
-        f"## 《{title}》對嘴版｜MiniMax H3 ref2va（{k} 段）\n\n"
-        "人物參考圖固定長相，該段的人聲錨定在第 0 格，嘴型會跟著歌聲動。全部內建節點，不用點數。\n\n"
-        "| 對嘴 | 段落 | 起點 | 歌詞 |\n|---|---|---|---|\n" + lines + "\n\n"
+        f"## 《{title}》對嘴版｜第二階段（{k} 段）\n\n"
+        "從**原本生成好的片段**重新生成：第 0 格和每個切點後的第一格當錨點，場景、人物、剪接點跟原本一樣；"
+        "那段的人聲錨定在第 0 格，動作和嘴型重新生成、跟著歌聲。全部內建節點，不用點數。\n\n"
+        "| 對嘴 | 段落 | 起點 | 切點 | 歌詞 |\n|---|---|---|---|---|\n" + table + "\n\n"
         "### 跑法\n"
-        f"1. `lip_no` 設 **1**、Run 旁的批次數量設 **1**，先測第一個\n"
+        "1. `lip_no` 設 **1**、Run 旁的批次數量設 **1**，先測第一個\n"
         f"2. 一次跑完：`lip_no` 設 1、批次數量設 **{k}**\n"
         "3. 重抽：`lip_no` 設那個編號、`reroll` +1、批次數量 1\n\n"
         "### 輸出\n"
-        f"存到 `output/{folder}/shot_XX_…mp4`，和一般片段同一個資料夾。剪輯腳本會自動用編號最新的版本，"
-        "所以對嘴版會直接取代原本那段；不滿意就刪掉對嘴版的檔案。\n\n"
+        f"存到 `output/{folder}_lipsync/shot_XX_…mp4`，不會蓋掉原本那段。剪輯時指定要換上的段落：\n"
+        f"`python assemble_mv.py --project … --subs --lipsync {','.join(str(i) for i in ids)}`\n\n"
         "### 小提醒\n"
-        "- 人物要正面、臉夠大，嘴型才看得清楚；解析度預設 0.3，對嘴段可改 0.6 看細節\n"
-        "- Turbo 預設開（4 步）；關掉 = 20 步，畫質較好、約慢 4～5 倍\n"
-        "- 換人物：換 ③ 的參考圖；換歌聲：換 ③ 的人聲檔"))
+        "- 原片段裡臉要清楚；遠景、背影的段落對嘴效果有限\n"
+        "- 原片段重抽過的話，重新執行 build_lipsync_workflow.py，錨點會換成最新版本的畫面\n"
+        "- Turbo 預設開（4 步）；關掉 = 20 步，畫質較好、約慢 4～5 倍"))
 
     outp = a.out or os.path.join(P, f"{title}_對嘴_MiniMaxH3_本機.json")
     json.dump(g.ui(), open(outp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(g.api(), open(os.path.join(P, "lipsync_api.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"已產生 {outp}")
-    print(f"  對嘴 {k} 段：{', '.join(f'{i:02d}' for i in ids)}；輸出到 output/{folder}/")
-    print(f"  素材已放進 {inp}：{voc_name}、{face_name}" + (f"、{body_name}" if body_name else ""))
+    print(f"  對嘴 {k} 段：{', '.join(f'{i:02d}' for i in ids)}；{W}×{H}；輸出到 output/{folder}_lipsync/")
 
 
 if __name__ == "__main__":

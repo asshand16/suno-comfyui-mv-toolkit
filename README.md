@@ -2,59 +2,207 @@
 
 把一首 Suno 生成的歌，做成**切點對齊節拍、附歌詞字幕**的完整 MV。
 影片在自己電腦的 ComfyUI 上用 **MiniMax H3** 生成，全部是內建節點，不用點數。
+副歌可以另外做成**對嘴**段落：人物對著鏡頭唱，嘴型跟著歌聲動。
 
-流程：
+<p align="center"><img src="docs/images/highlights.gif" width="560" alt="《汪洋》MV 精華片段"></p>
+
+<p align="center"><img src="docs/images/shots_grid.jpg" alt="《汪洋》第 01～10 段畫面"></p>
+<p align="center"><sub>範例《汪洋》（3:58、27 段）的前 10 段，每段 10 秒、736×416、每段約 5 分鐘</sub></p>
+
+---
+
+## 目錄
+
+- [整體流程](#整體流程)
+- [圖文教學：從一首歌到 MV](#圖文教學從一首歌到-mv)
+- [對嘴段落（選用）](#對嘴段落選用)
+- [需要的東西](#需要的東西)
+- [各步驟細節](#各步驟細節)
+- [檔案](#檔案)
+
+---
+
+## 整體流程
+
+![整體流程](docs/images/pipeline.png)
+
+| 步驟 | 做什麼 | 你要動手嗎 |
+|---|---|---|
+| ① Suno 歌曲 | 取得歌詞（含段落標籤）、節拍、每個字的演唱時間 | 提供歌曲（或請 Claude 透過 Suno 連接器抓） |
+| ② `prepare_song.py` | 依節拍把整首歌切成每段約 9 秒，產生字幕 | 執行一行指令 |
+| ③ 分鏡設定 | 每段要拍什麼畫面 | 自己寫，或請 AI 依歌詞寫 |
+| ④ `write_prompts.py` + `build_workflow.py` | 組成英文提示詞，產生 ComfyUI 工作流程 | 執行兩行指令 |
+| ⑤ ComfyUI | 每段生成 10 秒影片 | 拖進 ComfyUI，按 Run |
+| ⑥ `assemble_mv.py` | 剪到節拍長度、換上原曲、燒字幕 | 執行一行指令 |
+
+---
+
+## 圖文教學：從一首歌到 MV
+
+### Step 1　準備一個資料夾
 
 ```
-Suno 歌曲資料（歌詞、節拍、逐字時間）
-  → prepare_song.py   依節拍切成每段約 9 秒，產生字幕
-  → 分鏡設定.json      每段的畫面（人或 AI 寫）
-  → write_prompts.py  組成英文提示詞
-  → build_workflow.py 產生 ComfyUI 工作流程（段數自動）
-  → ComfyUI 逐段生成 10 秒影片
-  → assemble_mv.py    剪到節拍長度、換上原曲、燒字幕
+projects/我的歌/
+├─ 我的歌.mp3                原曲
+├─ suno_retrieve.json        歌名、風格、帶 [Verse]/[Chorus] 標籤的歌詞
+├─ suno_analysis.json        BPM、調性、拍子
+└─ suno_alignment.json       每個字的演唱時間
 ```
 
-範例：[`examples/汪洋/`](examples/汪洋/)：一首 3:58 的歌，27 段的分鏡、提示詞、字幕和工作流程。
+三份 JSON 是 Suno API 的回傳內容。用 Claude 搭配 Suno 連接器時，給它歌曲連結，它會幫你存好。
+
+### Step 2　依節拍切段
+
+```
+python prepare_song.py projects/我的歌 --folder my_song_mv
+```
+
+會產生 `分鏡草稿.md`，打開就能看到每段的時間、段落和歌詞：
+
+| # | 時間 | 長度 | 段落 | 歌詞 | 畫面 |
+|---|---|---|---|---|---|
+| 03 | 0:17–0:26 | 8.8s | 主歌一 | 你又夢見那片海 / 潮水退得很遠 | （待寫） |
+| 04 | 0:26–0:35 | 8.3s | 主歌一 | 他背對著你 / 一直走 一直走 | （待寫） |
+| 09 | 1:13–1:22 | 8.8s | 副歌一 | 你追尋是一片的汪洋 / 是你流乾淚水的海洋 | （待寫） |
+
+切點都在拍子上，每個段落從人聲進來前的強拍開始，不會切在一個字唱到一半。
+
+### Step 3　寫分鏡
+
+在資料夾裡建立 `分鏡設定.json`，寫共用風格、角色外型、每段 1～3 個鏡頭：
+
+```jsonc
+{
+  "style": "Dreamlike surreal live-action music video shot, cinematic: moonlit deep teal …",
+  "characters": { "the woman": "a young East Asian woman in her late twenties with long loose black hair …" },
+  "shots": {
+    "9": { "zh": "她站在汪洋中央的小沙洲，眼淚落下化成整片海",
+           "chars": ["the woman"],
+           "overview": "The chorus opens into a vast surreal ocean …",
+           "shots": ["Wide aerial shot: she stands alone on a tiny sandbar …",
+                     "Close-up: a tear falls and the sea rises around her …"] }
+  }
+}
+```
+
+完整範例見 [`examples/汪洋/分鏡表.md`](examples/汪洋/分鏡表.md)。
+
+### Step 4　產生 ComfyUI 工作流程
+
+```
+python write_prompts.py  projects/我的歌
+python build_workflow.py projects/我的歌
+```
+
+得到 `我的歌MV_MiniMaxH3_本機.json`。不管幾段，都會自動排好提示詞節點：
+
+<p align="center"><img src="docs/images/comfyui_prompts.png" width="640" alt="ComfyUI 裡的分鏡提示詞區"></p>
+<p align="center"><sub>拖進 ComfyUI 後的樣子：中間每一格是一段的提示詞（可以直接改文字），右邊每 9 段接一個 Create List</sub></p>
+
+### Step 5　在 ComfyUI 生成
+
+1. 把 `我的歌MV_MiniMaxH3_本機.json` **拖進 ComfyUI**
+2. 左邊 `clip_no` 設 **1**，視窗上方 **Run 旁的批次數量設 1**，按 **Run** → 先看第 1 段的畫面和速度
+3. 滿意後 `clip_no` 設 **2**、批次數量設**剩下的段數**，按一次 Run，就會一段一段跑完
+4. 檔案存在 `ComfyUI/output/my_song_mv/shot_01_00001_.mp4`、`shot_02_…` …
+
+> 某段不滿意：`clip_no` 設那段、`reroll` +1、批次數量 1，按 Run。新檔不會蓋掉舊檔，剪輯時自動用最新的。
+
+### Step 6　剪成 MV
+
+```
+python assemble_mv.py --project projects/我的歌 --allow-missing --subs --labels   # 修改用
+python assemble_mv.py --project projects/我的歌 --subs                            # 成品
+```
+
+修改用版本的左上角會標出「第幾段・哪個版本」，還沒生成的段落是黑畫面，方便邊跑邊看：
+
+<p align="center"><img src="docs/images/review_cut.jpg" width="720" alt="修改用版本：左上角段號、下方歌詞"></p>
+
+---
+
+## 對嘴段落（選用）
+
+![兩種生成方式](docs/images/two_modes.png)
+
+一般段落只看文字生成，人物不會照著歌詞張嘴。對嘴是**第二階段**：所有段落先用一般方式跑完、剪好，看完整支片後，再挑想讓人物開口唱的段落。
+
+對嘴版是**從原本那段片段重新生成**：
+
+- 自動偵測原片段裡的硬切點，把**第 0 格和每個切點後的第一格**當錨點 → 場景、人物、構圖、剪接點都跟原本一樣
+- 那段的**人聲**（Demucs 從原曲分離、切出 10 秒）錨定在第 0 格 → 動作和嘴型重新生成，跟著歌聲
+- 原本的片段永遠保留，對嘴版另存一個資料夾，剪輯時指定才換上
+
+```
+pip install demucs
+python build_lipsync_workflow.py projects/我的歌 --shots 5,9
+```
+
+1. 產生 `我的歌_對嘴_MiniMaxH3_本機.json`，拖進 ComfyUI
+2. `lip_no` 設 1、批次數量設對嘴段數，按 Run
+3. 輸出存到**另一個資料夾** `output/<資料夾>_lipsync/`，不會蓋掉原本的段落
+4. 剪輯時指定要換上的段落：`python assemble_mv.py --project projects/我的歌 --subs --lipsync 5,9`
+
+<p align="center"><img src="docs/images/lipsync.gif" width="720" alt="第 05 段：原版和對嘴版"></p>
+<p align="center"><sub>第 05 段：左邊原版、右邊對嘴版。同一個場景、同一個切點（4.42 秒），右邊跟著「你怕他回頭」開口唱</sub></p>
+
+**有聲示範**（點開播放，聽得到原曲才看得出嘴型）：[第 05 段・原版 vs 對嘴版](docs/videos/lipsync_shot05_compare.mp4)
+
+<p align="center"><img src="docs/images/lipsync_compare.jpg" width="720" alt="第 05 段逐格比較"></p>
+<p align="center"><sub>上排原版、下排對嘴版：場景和切點都保留；「回頭」嘴唇嘟圓對得上；人聲時間誤差 0 毫秒</sub></p>
+
+**第二個範例《讓我留下來》**（男聲、35mm 底片風、29 段，其中 7 段對嘴）：
+
+<p align="center"><img src="docs/images/lipsync_letmestay.jpg" width="720" alt="《讓我留下來》第 04 段：原版和對嘴版"></p>
+<p align="center"><sub>第 04 段「臉上藏不住的迷戀」：上排原版嘴巴閉著，下排對嘴版跟著歌聲開口；臉、髮型、背景都一樣</sub></p>
+
+**有聲示範**：[第 04 段・原版 vs 對嘴版](docs/videos/lipsync_letmestay_shot04_compare.mp4)
+
+**怎麼挑對嘴段落：先看縮圖表**
+
+```
+python contact_sheet.py projects/我的歌
+```
+
+每段抽 5 格畫面拼成 `縮圖表_1.jpg`、`縮圖表_2.jpg`…（每張 10 段），再加一份 `縮圖表.md` 列出每段的歌詞。一眼就能看出哪幾段有臉、有在唱：
+
+<p align="center"><img src="docs/images/contact_sheet.jpg" width="720" alt="縮圖表：每段 5 格畫面"></p>
+<p align="center"><sub>《讓我留下來》第 04～09 段。04（後半特寫）、05（後半正面）適合對嘴；07 主要是背影和遠景、09 後半是信紙特寫，不適合</sub></p>
+
+- 要**有歌詞**，而且原片段裡**唱歌的人臉要清楚**（特寫、正面最好）。遠景、背影、只有手或物件的段落就算對嘴也看不出來
+- 歌是男聲就挑男主角露臉的段落；不露臉的角色（只拍背影的設定）不要挑
+- 一段裡只要有一個鏡頭是清楚的臉就值得做，其他鏡頭會照原本的錨點畫面延續
+- 交給 Claude 也行：它會看縮圖表和歌詞，挑好段落、產生工作流程並排進佇列
+- 想自己寫某段的對嘴提示詞：`--prompts 檔案.json`（`{"5": "…"}`），或在 `分鏡設定.json` 那段加 `"lipsync_prompt"`
+- 原片段重抽過的話，重新執行 `build_lipsync_workflow.py`，錨點會換成最新版本的畫面
+
+對嘴版用的是 H3 的 **ref2va** 模型和 4 步 Turbo LoRA，736×416 每段約 3.5 分鐘；整支 MV（29 段＋7 段對嘴）約 3 小時。
 
 ---
 
 ## 需要的東西
 
 - **ComfyUI**（新版，要有內建的 MiniMax H3 節點）
-- **MiniMax H3 模型**（約 39 GB），放進 `ComfyUI/models/`：
+- **MiniMax H3 模型**，放進 `ComfyUI/models/`（下載：<https://huggingface.co/Comfy-Org/MiniMax-H3>）
 
-  | 資料夾 | 檔名 | 大小 |
-  |---|---|---|
-  | `diffusion_models/` | `minimax_h3_fl2va_pruned_int8_convrot.safetensors` | 19.5 GB |
-  | `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | 14.6 GB |
-  | `vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` | 2.6 GB |
-  | `vae/` | `minimax_h3_audio_vae_fp32.safetensors` | 0.6 GB |
-  | `loras/` | `minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors` | 1.8 GB |
+  | 資料夾 | 檔名 | 大小 | 用在 |
+  |---|---|---|---|
+  | `diffusion_models/` | `minimax_h3_fl2va_pruned_int8_convrot.safetensors` | 19.5 GB | 一般段落 |
+  | `diffusion_models/` | `minimax_h3_ref2va_pruned_int8_convrot.safetensors` | 19.5 GB | 對嘴（選用） |
+  | `text_encoders/` | `qwen3vl_32b_minimax_h3_nvfp4_awq.safetensors` | 14.6 GB | 都要 |
+  | `vae/` | `minimax_h3_video_vae_int8_convrot.safetensors` | 2.6 GB | 都要 |
+  | `vae/` | `minimax_h3_audio_vae_fp32.safetensors` | 0.6 GB | 都要 |
+  | `loras/` | `minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors` | 1.8 GB | 一般段落（[lightx2v](https://huggingface.co/lightx2v/Minimax-h3-Turbo)） |
+  | `loras/` | `minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors` | 1.8 GB | 對嘴（選用） |
 
-  下載：<https://huggingface.co/Comfy-Org/MiniMax-H3>（Turbo LoRA：<https://huggingface.co/lightx2v/Minimax-h3-Turbo>）
-- **Python 3.8+**
-- **ffmpeg**（剪輯用；Windows：`winget install ffmpeg`）
-
-在 RTX 3090 24GB 上，預設 736×416（megapixels 0.3）、Turbo 8 步，每段約 7～8 分鐘。
+- **Python 3.8+**、**ffmpeg**（Windows：`winget install ffmpeg`）
+- 對嘴另需 `pip install demucs`（第一次分離會下載約 80 MB 的模型）
 
 ---
 
-## 做一首新歌
+## 各步驟細節
 
-### 1. 準備專案資料夾
-
-開一個資料夾放這首歌，例如 `projects/我的歌/`，放進：
-
-| 檔案 | 內容 |
-|---|---|
-| `歌名.mp3` | 原曲 |
-| `suno_retrieve.json` | 歌名、風格、**帶段落標籤的歌詞**（`[Verse 1]`、`[Chorus]`…） |
-| `suno_analysis.json` | BPM、調性、拍子 |
-| `suno_alignment.json` | 每個字的演唱時間 |
-
-這三份 JSON 是 Suno API 的回傳內容（`/audio/{id}`、`/audio/{id}/analysis`、`/audio/{id}/lyrics-alignment`）。
-用 Claude 搭配 Suno 連接器時，直接請它把資料存進來即可。也接受精簡格式：
+### Suno 資料的精簡格式
 
 ```jsonc
 // suno_analysis.json：只存強拍，其餘拍子會自動補上
@@ -65,29 +213,17 @@ Suno 歌曲資料（歌詞、節拍、逐字時間）
 {"words": [["你", 18.254, 18.569], ["又", 18.569, 18.649], ["\n潮", 22.632, 22.712], ...]}
 ```
 
-### 2. 切段和字幕
+也接受 Suno API 的原始格式（`/audio/{id}`、`/audio/{id}/analysis`、`/audio/{id}/lyrics-alignment`）。
 
-```
-python prepare_song.py projects/我的歌 --folder my_song_mv
-```
+### prepare_song.py
 
-- 每段 4～10 秒（理想 8.8 秒），切點都在拍子上，優先強拍
-- 每個段落（主歌、副歌…）從人聲進來前的強拍開始
-- 不切在唱一個字的中間；歌詞唱完後的器樂尾奏另成一段
-- 字幕前後句不重疊（字幕高度不會跳）
+- 每段 4～10 秒（理想 8.8 秒），切點在拍子上，優先強拍
+- 歌詞唱完後的器樂尾奏另成一段；字幕前後句不重疊（字幕高度不會跳）
 - 想少幾段：`--target 9.5`；多幾段：`--target 7.5`
 
-產生 `shots.json`（切點）、`lyrics.srt`、`分鏡草稿.md`、`song_info.json`。
+### write_prompts.py
 
-### 3. 寫分鏡
-
-在專案資料夾建立 `分鏡設定.json`（格式見 `write_prompts.py` 開頭說明）：共用風格、角色外型、每段 1～3 個鏡頭。然後：
-
-```
-python write_prompts.py projects/我的歌
-```
-
-每段的鏡頭時間會依那段實際長度、對齊拍子分配。產生的提示詞結構：
+每段的鏡頭時間依那段實際長度、對齊拍子分配，產生的提示詞結構：
 
 ```
 [共用風格]
@@ -96,55 +232,36 @@ Scene overview: …
 Storyboard (2 shots, hard cuts landing on the beat):
 [0.0s-3.4s] Shot 1: …
 [3.4s-10.0s] Shot 2: …
-Camera: …
-Audio: …
-No text, subtitles, logos or watermarks …
+Camera: … / Audio: … / No text, subtitles, logos or watermarks …
 ```
 
-### 4. 產生 ComfyUI 工作流程
+### build_workflow.py
 
-```
-python build_workflow.py projects/我的歌
-```
+以 `templates/MiniMaxH3_本機_範本.json` 為範本，依段數重建提示詞節點。CreateList 一個最多 10 個輸入，所以每 9 段一組再合併（最多 90 段）。改範本（解析度、步數…），之後產生的都會跟著改。
 
-以 `templates/MiniMaxH3_本機_範本.json` 為範本，依段數重建提示詞節點。
-CreateList 一個最多 10 個輸入，所以每 9 段一組再合併（最多 90 段）。改範本（解析度、步數…）之後產生的都會跟著改。
-
-### 5. 在 ComfyUI 生成
-
-1. 把 `歌名MV_MiniMaxH3_本機.json` 拖進 ComfyUI
-2. `clip_no` 設 1、Run 旁的批次數量設 1，先測第 1 段
-3. 滿意後 `clip_no` 設 2、批次數量設剩下的段數，按一次 Run
-4. 輸出到 `ComfyUI/output/<folder>/shot_01_00001_.mp4` …
-
-- **重抽某段**：`clip_no` 設那段、`reroll` +1、批次數量 1
-- **解析度**：Resolution Selector 預設 megapixels 0.3（736×416）；要更清楚改 0.6（1056×608）或 0.98（1344×768），會慢很多
+- **解析度**：預設 megapixels 0.3（736×416）；要更清楚改 0.6（1056×608）或 0.98（1344×768），會慢很多
 - **Turbo**：預設 8 步；關掉 = 20 步，畫質好一些，約慢 2.5 倍
 
-### 5b.（選用）對嘴段落
+### build_lipsync_workflow.py
 
-挑幾段讓人物對著鏡頭唱，嘴型跟著歌聲動：
+- `--shots` 對嘴段落（一次最多 10 段）；那幾段要先有原本的片段
+- 自動偵測原片段的硬切點（最多 2 個），抽出錨點畫面放進 `ComfyUI/input/`；解析度跟原片段一樣
+- `--face` 選用：再加一張臉部參考圖，讓長相更穩定
+- `lip_no` 會自動帶出那段的人聲起點、錨點畫面和影格、段落編號、提示詞、檔名
+- 自訂對嘴提示詞：`--prompts 檔案.json`，或在 `分鏡設定.json` 那段加 `"lipsync_prompt": "..."`
+- 輸出到 `output/<資料夾>_lipsync/`，和一般段落分開
 
-```
-pip install demucs
-python build_lipsync_workflow.py projects/我的歌 --shots 9,14,20,22 --face 臉部特寫.png --body 全身.png --singer "the woman"
-```
+### contact_sheet.py
 
-- 用 MiniMax H3 **ref2va** 模型（`minimax_h3_ref2va_pruned_int8_convrot.safetensors`）和 Turbo LoRA（`minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors`）
-- 參考圖固定人物長相；整首人聲用 Demucs 分離，每段自動切出那 10 秒，用 `MiniMaxH3AddGuide` 錨定在第 0 格
-- 產生 `<歌名>_對嘴_MiniMaxH3_本機.json`，`lip_no` 選第幾個對嘴段，起點、段落編號、提示詞、檔名都會自動帶出
-- 輸出和一般片段同一個資料夾（`shot_XX_000NN_.mp4`），剪輯時自動用編號最新的版本，所以對嘴版會取代原本那段
-- 某段想自己寫對嘴提示詞：在 `分鏡設定.json` 那段加 `"lipsync_prompt": "..."`
+- 每段在 6%、30%、54%、78%、96% 的位置各抽一格，左上角標段號
+- `--lipsync`：改看對嘴版（`_lipsync` 資料夾），可以跟原版的縮圖表對照
+- `--per-sheet 10`：每張幾段；`--width 240`：每格寬度
 
-### 6. 剪成 MV
-
-```
-python assemble_mv.py --project projects/我的歌 --allow-missing --subs --labels   # 修改用：左上角標段號和版本
-python assemble_mv.py --project projects/我的歌 --subs                            # 成品
-```
+### assemble_mv.py
 
 - 依 `shots.json` 把每段剪到精確影格數、接起來、換上原曲
-- 同一段重抽過，自動用編號最大（最新）的版本
+- 同一段有多個版本時，自動用編號最大（最新）的
+- `--lipsync 9,22`：這幾段換成 `_lipsync` 資料夾裡的對嘴版（`--lipsync all` = 有對嘴版的全部換）；左上角標籤會標「對嘴」
 - 1920×1080、24fps、H.264 + AAC 320k，開頭淡入、結尾淡出
 - ComfyUI output 位置預設 `~/Documents/ComfyUI/output`，可用環境變數 `COMFYUI_OUTPUT` 或 `--comfy-output` 指定
 - 其他選項：`--fontsize 34`、`--marginv 10`（字幕大小和高度）、`--size native`
@@ -158,13 +275,16 @@ python assemble_mv.py --project projects/我的歌 --subs                       
 | `prepare_song.py` | Suno 資料 → 切點、字幕、分鏡草稿 |
 | `write_prompts.py` | 分鏡設定 → 英文提示詞 |
 | `build_workflow.py` | shots.json → ComfyUI 工作流程 |
+| `build_lipsync_workflow.py` | 指定段落 → 對嘴版 ComfyUI 工作流程 |
 | `assemble_mv.py` | 生成的片段 + 原曲 → 完整 MV |
-| `build_lipsync_workflow.py` | 指定段落 → 對嘴版 ComfyUI 工作流程（H3 ref2va + 人聲錨定） |
-| `templates/object_info_lipsync.json` | 對嘴工作流程用到的節點定義快照（連不到 ComfyUI 時使用） |
+| `contact_sheet.py` | 每段抽畫面拼成縮圖表，挑對嘴段落或檢查整支片用 |
 | `templates/MiniMaxH3_本機_範本.json` | ComfyUI 工作流程範本（全部內建節點） |
-| `examples/汪洋/` | 完整範例（不含音樂和影片） |
+| `templates/object_info_lipsync.json` | 對嘴工作流程用到的節點定義快照（連不到 ComfyUI 時使用） |
+| `examples/汪洋/` | 完整範例：分鏡表、提示詞、字幕、工作流程 |
+| `docs/` | 本頁的圖片和示範短片 |
 
 ## 授權提醒
 
 MiniMax H3 使用 MiniMax H3 Community License，美國、歐盟、英國、韓國不在授權範圍內；
 商用前請先看 <https://huggingface.co/MiniMaxAI/MiniMax-H3> 的條款。
+範例歌曲《汪洋》《讓我留下來》的音樂只以 10 秒內的示範片段收錄於 `docs/videos/`。

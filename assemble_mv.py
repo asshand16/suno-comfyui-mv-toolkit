@@ -52,6 +52,9 @@ def main():
     ap.add_argument("--allow-missing", action="store_true")
     ap.add_argument("--labels", action="store_true", help="左上角標出段落編號和檔案版本（方便回 ComfyUI 修改）")
     ap.add_argument("--labelfont", default=None, help="標籤字型檔（預設 Windows 微軟正黑體 msjh.ttc）")
+    ap.add_argument("--lipsync", default="",
+                    help="換成對嘴版的段落，例如 9,22（all = 對嘴資料夾裡有的全部換）")
+    ap.add_argument("--lipsync-clips", default=None, help="對嘴版資料夾（預設：片段資料夾名稱加 _lipsync）")
     ap.add_argument("--crf", type=int, default=18)
     a = ap.parse_args()
 
@@ -80,6 +83,19 @@ def main():
     fps = plan["fps"]
     shots = plan["shots"]
     clips = find_clips(a.clips)
+    lip_used = set()
+    if a.lipsync.strip():
+        lip_dir = a.lipsync_clips or os.path.normpath(a.clips) + "_lipsync"
+        lip = find_clips(lip_dir) if os.path.isdir(lip_dir) else {}
+        want = set(lip) if a.lipsync.strip().lower() == "all" else \
+            {int(x) for x in a.lipsync.replace(" ", "").split(",") if x}
+        no = sorted(want - set(lip))
+        if no:
+            print("注意：這些段落沒有對嘴版，維持原本的：" + ", ".join(f"{i:02d}" for i in no))
+        for i in sorted(want & set(lip)):
+            clips[i] = lip[i]; lip_used.add(i)
+        if lip_used:
+            print("換成對嘴版：" + ", ".join(f"{i:02d}" for i in sorted(lip_used)))
     missing = [s["id"] for s in shots if s["id"] not in clips]
     if missing and not a.allow_missing:
         sys.exit("還缺這些段落：" + ", ".join(f"{m:02d}" for m in missing) + "\n（想先看粗剪可加 --allow-missing）")
@@ -94,7 +110,7 @@ def main():
             return ""
         if sid in clips:
             ver = PAT.search(os.path.basename(clips[sid])).group(2)
-            txt = f"第 {sid:02d} 段  ·  {ver}"
+            txt = f"第 {sid:02d} 段  ·  {'對嘴 ' if sid in lip_used else ''}{ver}"
         else:
             txt = f"第 {sid:02d} 段  ·  未生成"
         fontfile = (a.labelfont or r"C:\Windows\Fonts\msjh.ttc").replace("\\", "/").replace(":", "\\:")
