@@ -18,6 +18,7 @@
 - [對嘴段落（選用）](#對嘴段落選用)
 - [重點段落用高畫質重做（選用）](#重點段落用高畫質重做選用)
 - [實驗中：MiniMax H3 官方提示詞格式](#實驗中minimax-h3-官方提示詞格式)
+- [風格與畫質測試紀錄](#風格與畫質測試紀錄)
 - [需要的東西](#需要的東西)
 - [各步驟細節](#各步驟細節)
 - [檔案](#檔案)
@@ -233,6 +234,89 @@ non_diegetic_music: N/A
 
 ---
 
+## 風格與畫質測試紀錄
+
+第三首測試歌《紅線斷了》（男聲 R&B ＋ 80 年代 synthwave、98 BPM、32 段）用來測 **2D 動畫風格**和**讓人物更立體鮮明**的方法。以下時間都是 RTX 3090、每段 10 秒。
+
+### 2D 動畫風格（H3 格式＋每個鏡頭重申媒材）
+
+<p align="center"><img src="docs/images/style_2d_anime.jpg" width="900" alt="2D 動畫風格測試：8 段畫面"></p>
+<p align="center"><sub>90 年代賽璐璐動畫風、霓虹 synthwave 配色。9 段都維持 2D，沒有跑成寫實或 3D；主角（黑髮、黑外套配暗紅帽T、小指上的紅線）9 段都認得出是同一人</sub></p>
+
+做法：`分鏡設定.json` 的 `style` 寫明媒材並排除寫實，另外加 `medium`，`write_prompts.py --format h3` 會在每個 `[Shot N]` 開頭重申一次（MiniMax 官方對非寫實風格的建議）：
+
+```jsonc
+"style": "2D hand-drawn anime music video, 1990s Japanese cel animation look: clean ink line art, flat cel shading … not photorealistic, not 3D CG.",
+"medium": "2D cel-shaded anime, hand-drawn line art",
+"negative": "No text, captions, logos or watermarks; no photorealistic rendering, no live-action footage, no 3D CG look."
+```
+
+- **角色一致性比寫實版好很多**：動畫的臉比較簡化，模型比較容易維持同一個人
+- 學到的事：
+  - 角色要**逐鏡頭**標出場，不要整段一起列。整段列了，只在倒影出現的角色也會被畫進場景
+  - 關鍵動作要寫成連續過程（繃緊 → 一根根斷開 → 彈開 → 碎成光點），只寫「斷了」會不明顯
+  - 遠景人物要佔畫面至少 1/10，太小會被省略
+  - 招牌會出現假文字；要避免就寫「沒有文字的霓虹燈管圖案」
+
+### 讓人物更立體鮮明：五種做法比較
+
+<p align="center"><img src="docs/images/quality_compare.jpg" width="900" alt="第 11 段五種做法比較"></p>
+
+| 做法 | 立體感 | 清晰度 | 每段時間 |
+|---|---|---|---|
+| 原版（0.3、8 步） | 光線平 | 普通 | 5 分 |
+| **加光影提示詞**（0.3） | ⭐ 最大差別：輪廓光、明暗分明，人物跳出背景 | 同原版 | 5 分 |
+| 0.6 解析度 | 普通 | 線條、睫毛更細 | 14 分 |
+| 原版＋RealESRGAN 放大 | 同原版 | 線條更銳利，畫面不變 | 5＋5 分 |
+| **0.6＋光影＋RealESRGAN** | ⭐ 最好 | ⭐ 最好 | 15＋11 分 |
+
+<p align="center"><img src="docs/images/quality_best.jpg" width="720" alt="0.6＋光影＋RealESRGAN"></p>
+<p align="center"><sub>0.6＋光影提示詞＋RealESRGAN：頭髮兩側的青色、洋紅輪廓光，清楚的陰影邊緣，1080p 全螢幕也不糊</sub></p>
+
+光影提示詞（加在 `style` 後面；原本的「soft gradient shadows」改成「crisp hard-edged shadows」）：
+
+```
+Strong cinematic lighting for depth: bright magenta and cyan rim light outlining hair and shoulders,
+crisp cel-shaded shadows with hard clean edges on faces and clothing, high contrast between lit and
+shadow sides, sharp focus on the characters' faces.
+```
+
+RealESRGAN 放大在 ComfyUI 用內建節點就能做：`LoadVideo → GetVideoComponents → UpscaleModelLoader(RealESRGAN_x4) → ImageUpscaleWithModel → ImageScale(1920×1080) → CreateVideo → SaveVideo`。
+
+**建議組合**：
+
+| 段落 | 設定 |
+|---|---|
+| 全部段落 | 光影提示詞＋0.3 |
+| 臉部特寫、對嘴、副歌（6～8 段） | 0.6＋光影＋RealESRGAN |
+
+整支約 6～7 小時。改變解析度或提示詞時，同一個 seed 的構圖也會改變。
+
+### 時間估算（每段 10 秒）
+
+0.3、0.6 是實測，其他依「解析度加倍、每步約 3 倍時間」推估：
+
+| megapixels | 尺寸 | 8 步 | 20 步 |
+|---|---|---|---|
+| 0.3 | 736×416 | 5 分（實測） | 11 分 |
+| 0.4 | 832×480 | 8 分 | 18 分 |
+| 0.5 | 960×544 | 11 分 | 25 分 |
+| 0.6 | 1056×608 | 14 分（實測） | 31 分（實測） |
+| 0.8 | 1216×672 | 22 分 | 51 分 |
+| 1.0 | 1344×768 | 30 分 | 72 分 |
+
+0.8 以上，顯示卡記憶體可能不夠放 10 秒（243 格），會更慢或失敗，請先跑一段實測。
+
+### 跑的時候電腦很卡／生成卡住
+
+- **電腦很卡**：H3 跑起來會把 24 GB 顯示卡吃滿。在 ComfyUI 啟動參數加 `--reserve-vram 3`，保留 3 GB 給桌面和瀏覽器；實測生成速度沒有變慢。
+  - **Comfy Desktop 新版**的啟動參數存在 `%APPDATA%\Comfy Desktop\installations.json` 的 `launchArgs`，不是 ComfyUI 設定裡的 `Comfy.Server.LaunchArgs`。
+  - 要改的話，先完全關掉 Desktop 再改，改完確認啟動紀錄（`user/comfyui_8000.log` 的 `Args:`）裡有這個參數。
+- **生成卡住**：遇過一次，取樣第一步就卡了 46 分鐘（使用率 100%、沒有報錯）。重開 ComfyUI 就恢復正常。
+  - 排大量工作時，建議一段一段送，並加看門狗：例如第一步超過 3～7 分鐘沒進展就自動中斷。
+
+---
+
 ## 需要的東西
 
 - **ComfyUI**（新版，要有內建的 MiniMax H3 節點）
@@ -290,6 +374,7 @@ Camera: … / Audio: … / No text, subtitles, logos or watermarks …
 
 - `--format h3`：改用 MiniMax 官方三段式（實驗中，見上方說明）
 - `--shots-out 檔案.json`：寫到別的檔案，不覆寫 `shots.json`
+- `分鏡設定.json` 加 `"medium"`（例如 `2D cel-shaded anime`）：`--format h3` 時每個 `[Shot N]` 開頭都會重申，動畫風格比較不會跑成寫實
 
 ### build_workflow.py
 

@@ -12,6 +12,7 @@
   "style": "共用風格（英文）",
   "characters": {"the man": "外型描述", "the woman": "外型描述"},
   "camera": "預設運鏡",
+  "medium": "（選用，動畫風格用）每個 [Shot N] 開頭重申的媒材，例如 2D cel-shaded anime, not photorealistic",
   "audio": "預設音效描述",
   "negative": "最後一行（不要字幕、浮水印…）",
   "shots": {
@@ -49,7 +50,8 @@ def h3_prompt(cfg, c, subs, edges):
         body.append("On screen: " + "; ".join(f"{k}, {cfg['characters'][k]}" for k in c["chars"]) + ".")
     body.append(subs[0])
     for k in range(1, len(subs)):
-        body.append(f"[Shot {k + 1}] At {ts(edges[k])}, the camera cuts to the next shot. {subs[k]}")
+        med = (cfg["medium"] + ", ") if cfg.get("medium") else ""  # 動畫風格：每個鏡頭開頭都重申媒材（官方建議）
+        body.append(f"[Shot {k + 1}] At {ts(edges[k])}, the camera cuts to the next shot. {med}{subs[k]}")
     body.append("Camera throughout: " + c.get("camera", cfg["camera"]))
     body.append(cfg.get("h3_silence", "Nobody in the video speaks or sings; every visible face keeps its lips closed."))
     body.append(cfg["negative"])
