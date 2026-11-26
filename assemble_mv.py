@@ -55,6 +55,11 @@ def main():
     ap.add_argument("--lipsync", default="",
                     help="換成對嘴版的段落，例如 9,22（all = 對嘴資料夾裡有的全部換）")
     ap.add_argument("--lipsync-clips", default=None, help="對嘴版資料夾（預設：片段資料夾名稱加 _lipsync）")
+    ap.add_argument("--hq", default="",
+                    help="換成高畫質版的段落，例如 4,5,12（all = 高畫質資料夾裡有的全部換）；標籤會標「高畫質」")
+    ap.add_argument("--hq-clips", default=None, help="高畫質版資料夾（預設：片段資料夾名稱加 _hq）")
+    ap.add_argument("--hq-label", default="高畫質", help="替換段落的標籤文字（預設「高畫質」；例如「H3格式」）")
+    ap.add_argument("--hq-note", default="", help="個別段落的附註，例如 10=8步,13=8步（會加在標籤後面）")
     ap.add_argument("--crf", type=int, default=18)
     a = ap.parse_args()
 
@@ -83,12 +88,33 @@ def main():
     fps = plan["fps"]
     shots = plan["shots"]
     clips = find_clips(a.clips)
+
+    def pick(spec, avail):
+        return set(avail) if spec.strip().lower() == "all" else \
+            {int(x) for x in spec.replace(" ", "").split(",") if x}
+
+    hq_used = set()
+    if a.hq.strip():
+        hq_dir = a.hq_clips or os.path.normpath(a.clips) + "_hq"
+        hq = find_clips(hq_dir) if os.path.isdir(hq_dir) else {}
+        want = pick(a.hq, hq)
+        no = sorted(want - set(hq))
+        if no:
+            print("注意：這些段落沒有高畫質版，維持原本的：" + ", ".join(f"{i:02d}" for i in no))
+        for i in sorted(want & set(hq)):
+            clips[i] = hq[i]; hq_used.add(i)
+        if hq_used:
+            print(f"換成{a.hq_label}版：" + ", ".join(f"{i:02d}" for i in sorted(hq_used)))
     lip_used = set()
     if a.lipsync.strip():
         lip_dir = a.lipsync_clips or os.path.normpath(a.clips) + "_lipsync"
         lip = find_clips(lip_dir) if os.path.isdir(lip_dir) else {}
-        want = set(lip) if a.lipsync.strip().lower() == "all" else \
-            {int(x) for x in a.lipsync.replace(" ", "").split(",") if x}
+        if hq_used:  # 高畫質段落用高畫質對嘴版（<高畫質資料夾>_lipsync）
+            hq_lip_dir = os.path.normpath(a.hq_clips or os.path.normpath(a.clips) + "_hq") + "_lipsync"
+            hq_lip = find_clips(hq_lip_dir) if os.path.isdir(hq_lip_dir) else {}
+            lip = {i: f for i, f in lip.items() if i not in hq_used}
+            lip.update({i: f for i, f in hq_lip.items() if i in hq_used})
+        want = pick(a.lipsync, lip)
         no = sorted(want - set(lip))
         if no:
             print("注意：這些段落沒有對嘴版，維持原本的：" + ", ".join(f"{i:02d}" for i in no))
@@ -110,13 +136,16 @@ def main():
             return ""
         if sid in clips:
             ver = PAT.search(os.path.basename(clips[sid])).group(2)
-            txt = f"第 {sid:02d} 段  ·  {'對嘴 ' if sid in lip_used else ''}{ver}"
+            note = dict(x.split("=", 1) for x in a.hq_note.split(",") if "=" in x)
+            tags = (f"{a.hq_label}{('(' + note[str(sid)] + ')') if str(sid) in note else ''} " if sid in hq_used else "") + ("對嘴 " if sid in lip_used else "")
+            txt = f"第 {sid:02d} 段  ·  {tags}{ver}"
         else:
             txt = f"第 {sid:02d} 段  ·  未生成"
         fontfile = (a.labelfont or r"C:\Windows\Fonts\msjh.ttc").replace("\\", "/").replace(":", "\\:")
         fs = round(H * 0.04)
         return (f",drawtext=fontfile='{fontfile}':text='{txt}':x={round(H*0.03)}:y={round(H*0.03)}:"
-                f"fontsize={fs}:fontcolor=white:box=1:boxcolor=black@0.55:boxborderw={round(fs*0.35)}")
+                f"fontsize={fs}:fontcolor=white:box=1:"
+                f"boxcolor={'0xB8860B@0.85' if sid in hq_used else 'black@0.55'}:boxborderw={round(fs*0.35)}")
 
     args = [ff, "-hide_banner", "-y"]
     filt = []

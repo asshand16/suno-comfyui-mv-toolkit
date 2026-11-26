@@ -16,6 +16,8 @@
 - [整體流程](#整體流程)
 - [圖文教學：從一首歌到 MV](#圖文教學從一首歌到-mv)
 - [對嘴段落（選用）](#對嘴段落選用)
+- [重點段落用高畫質重做（選用）](#重點段落用高畫質重做選用)
+- [實驗中：MiniMax H3 官方提示詞格式](#實驗中minimax-h3-官方提示詞格式)
 - [需要的東西](#需要的東西)
 - [各步驟細節](#各步驟細節)
 - [檔案](#檔案)
@@ -180,6 +182,57 @@ python contact_sheet.py projects/我的歌
 
 ---
 
+## 重點段落用高畫質重做（選用）
+
+整支用 0.3 解析度跑完後，只挑重點段落（對嘴、副歌、橋段）用更高的設定重做，其他段落沿用。
+
+1. 複製一份工作流程，把 Resolution 改成 **0.6**（1056×608）、Turbo 關掉（**20 步**），檔名節點的資料夾改成 `<資料夾>_hq`
+2. `clip_no` 設要重做的段落，一段一段跑
+3. 高畫質段落要對嘴：`python build_lipsync_workflow.py projects/我的歌 --shots 4,12 --clips <ComfyUI>/output/<資料夾>_hq`（輸出到 `<資料夾>_hq_lipsync/`）
+4. 剪輯：
+
+```
+python assemble_mv.py --project projects/我的歌 --subs --labels --hq 4,10,12 --lipsync 4,12 --hq-note 4=20步,10=8步,12=20步
+```
+
+看片版裡，換過的段落左上角是**金底標籤**（「第 04 段 · 高畫質(20步) 對嘴 00001」），其他段落是黑底。成品版（不加 `--labels`）沒有標籤。
+
+| 設定（RTX 3090、每段 10 秒） | 每段時間 |
+|---|---|
+| 0.3、Turbo 8 步（預設） | 約 5 分鐘 |
+| 0.6、Turbo 8 步 | 約 14 分鐘 |
+| 0.6、20 步 | 約 31 分鐘 |
+| 對嘴 0.6、4 步 | 約 8 分鐘 |
+
+`--hq-clips` 可以指定任何資料夾、`--hq-label` 改標籤文字，所以也能拿來並排比較不同設定（例如下面的 H3 格式）。
+
+---
+
+## 實驗中：MiniMax H3 官方提示詞格式
+
+MiniMax 官方有一份 H3 提示詞寫法（[h3-prompt-writing skill](https://github.com/MiniMax-AI/MiniMax-H3/tree/main/skills/h3-prompt-writing)），用三段式結構，切點寫成 `[Shot 2] At 00:03.500, …`，歌詞寫成 `<d>[Chinese] …</d>`。工具包可以產生這種格式，但**還在比較測試，預設仍是原本的格式**。
+
+```
+# 一般段落：寫到另一個檔案，不動原本的 shots.json
+python write_prompts.py projects/我的歌 --format h3 --shots-out projects/我的歌_H3/shots.json
+
+# 對嘴段落：Ref2VA 六段式，錨點畫面＝<Picture N>、人聲＝<Audio 1>、歌詞寫進提示詞
+python build_lipsync_workflow.py projects/我的歌 --shots 4,12 --format h3 --singer "the man"
+```
+
+產生的一般段落提示詞長這樣：
+
+```
+integrated_multimodal_description: [Shot 1] …風格、場景、角色… [Shot 2] At 00:03.404, the camera cuts to the next shot. …
+  Nobody in the video speaks or sings; every visible face keeps its lips closed. No text, subtitles …
+overall_soundscape: Only soft room tone and distant city ambience …
+non_diegetic_music: N/A
+```
+
+《讓我留下來》12 段的初步比較（同解析度、同 seed）：構圖大致相同，部分鏡頭更貼近分鏡；但也出現新問題（提示詞裡的「面具」被畫成口罩、一段畫面重影）。還需要更多測試才會改成預設。
+
+---
+
 ## 需要的東西
 
 - **ComfyUI**（新版，要有內建的 MiniMax H3 節點）
@@ -235,6 +288,9 @@ Storyboard (2 shots, hard cuts landing on the beat):
 Camera: … / Audio: … / No text, subtitles, logos or watermarks …
 ```
 
+- `--format h3`：改用 MiniMax 官方三段式（實驗中，見上方說明）
+- `--shots-out 檔案.json`：寫到別的檔案，不覆寫 `shots.json`
+
 ### build_workflow.py
 
 以 `templates/MiniMaxH3_本機_範本.json` 為範本，依段數重建提示詞節點。CreateList 一個最多 10 個輸入，所以每 9 段一組再合併（最多 90 段）。改範本（解析度、步數…），之後產生的都會跟著改。
@@ -250,6 +306,8 @@ Camera: … / Audio: … / No text, subtitles, logos or watermarks …
 - `lip_no` 會自動帶出那段的人聲起點、錨點畫面和影格、段落編號、提示詞、檔名
 - 自訂對嘴提示詞：`--prompts 檔案.json`，或在 `分鏡設定.json` 那段加 `"lipsync_prompt": "..."`
 - 輸出到 `output/<資料夾>_lipsync/`，和一般段落分開
+- `--clips <資料夾>`：改用別的資料夾的片段當原片（例如高畫質版 `<資料夾>_hq`），輸出到 `<那個資料夾>_lipsync/`
+- `--format h3`、`--singer "the man"`：官方 Ref2VA 六段式對嘴提示詞（實驗中）；`--singer` 指定唱歌的角色，其他人會加上「嘴巴閉著」
 
 ### contact_sheet.py
 
@@ -262,6 +320,7 @@ Camera: … / Audio: … / No text, subtitles, logos or watermarks …
 - 依 `shots.json` 把每段剪到精確影格數、接起來、換上原曲
 - 同一段有多個版本時，自動用編號最大（最新）的
 - `--lipsync 9,22`：這幾段換成 `_lipsync` 資料夾裡的對嘴版（`--lipsync all` = 有對嘴版的全部換）；左上角標籤會標「對嘴」
+- `--hq 4,12`：這幾段換成 `<資料夾>_hq`（或 `--hq-clips` 指定的資料夾）的版本，標籤改成金底；`--hq-label` 改標籤文字、`--hq-note 4=20步` 加附註。和 `--lipsync` 一起用時，會用 `<高畫質資料夾>_lipsync` 的對嘴版
 - 1920×1080、24fps、H.264 + AAC 320k，開頭淡入、結尾淡出
 - ComfyUI output 位置預設 `~/Documents/ComfyUI/output`，可用環境變數 `COMFYUI_OUTPUT` 或 `--comfy-output` 指定
 - 其他選項：`--fontsize 34`、`--marginv 10`（字幕大小和高度）、`--size native`

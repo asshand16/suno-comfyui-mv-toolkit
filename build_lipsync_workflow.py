@@ -215,11 +215,11 @@ def lipsync_prompt(shot, cuts_sec, extra_ref=False):
     """把原本那段的提示詞改成對嘴版：分鏡時間改成偵測到的切點、加上歌詞和對嘴說明。"""
     paras = [x.strip() for x in shot.get("prompt", "").split("\n\n") if x.strip()]
     lyr = " / ".join(shot.get("lyrics", [])) or "(humming)"
-    sing = (f"The singer sings the Mandarin lyrics of the soundtrack ({lyr}); her lips, jaw and breathing are "
+    sing = (f"The singer sings the Mandarin lyrics of the soundtrack ({lyr}); the singer's lips, jaw and breathing are "
             "precisely synchronized to the sung vocal in the audio: the mouth shapes each syllable, opens on held "
             "notes, and closes during pauses. Keep every person, place and object exactly as in the anchored frames.")
     if extra_ref:
-        sing += " <Picture 1> shows the singer's face; use it only to keep her face identical."
+        sing += " <Picture 1> shows the singer's face; use it only to keep the face identical."
     out, added = [], False
     for p in paras:
         if p.startswith("Storyboard"):
@@ -230,7 +230,7 @@ def lipsync_prompt(shot, cuts_sec, extra_ref=False):
             body = "\n".join(
                 f"[{edges[n]:.1f}s-{edges[n + 1]:.1f}s] Shot {n + 1}: continue exactly from the anchored frame at "
                 f"{edges[n]:.1f}s (same framing, place, lighting and people) with gentle natural motion; whenever the "
-                f"singer's face is visible, her lips move in sync with the vocal." for n in range(n_sh))
+                f"singer's face is visible, the lips move in sync with the vocal." for n in range(n_sh))
             out.append(f"Storyboard ({n_sh} shot{'s' if n_sh > 1 else ''}"
                        + (", hard cuts landing on the beat" if n_sh > 1 else ", no cuts") + "):\n" + body)
         elif p.startswith("Audio:"):
@@ -242,6 +242,49 @@ def lipsync_prompt(shot, cuts_sec, extra_ref=False):
     if not added:
         out.insert(min(2, len(out)), sing)
     return "\n\n".join(out)
+
+
+def lipsync_prompt_h3(shot, cuts_sec, cfg, singer=None, extra_ref=False):
+    """MiniMax H3 官方 Ref2VA 六段格式：錨點畫面＝<Picture N>、人聲＝<Audio 1>、歌詞寫進 <d>[Chinese] …</d>。"""
+    lyr = "，".join(l for l in shot.get("lyrics", []) if l.strip())
+    chars = cfg.get("characters", {})
+    sc = cfg.get("shots", {}).get(str(shot["id"]), {})
+    who = singer or next((c for c in sc.get("chars", []) if c in chars), None) or "the singer"
+    look = chars.get(who, "")
+    edges = [0.0] + list(cuts_sec)
+    style = cfg.get("style", "Live-action, cinematic.")
+    pics = [f"<Picture {k + 1}> is the frame at the {t:.2f}-second mark of the target video"
+            + (" (the opening frame of [Shot 1])" if k == 0 else f" (the first frame of [Shot {k + 1}])")
+            for k, t in enumerate(edges)]
+    sd = ". ".join(pics) + (f". <Subject 1> is {who}" + (f", {look}" if look else "") + ", the on-screen singer (S1)") + \
+        ". <Audio 1> is the isolated lead vocal of <Subject 1> (S1) for this part of the song."
+    if extra_ref:
+        sd += f" <Picture {len(edges) + 1}> is a face reference for <Subject 1> only."
+    summary = (f"[keyframe completion + audio reuse] Starting from <Picture 1>, <Subject 1> (S1) sings the line carried by "
+               f"<Audio 1> across {len(edges)} shot{'s' if len(edges) > 1 else ''}, each shot opening on its anchored picture.")
+    ra = " ".join(f"<Picture {k + 1}> (appears in [Shot {k + 1}]): fully_preserved - framing, people, place, wardrobe and "
+                  f"lighting at {t:.2f} seconds." for k, t in enumerate(edges))
+    ra += (" <Subject 1> (appears whenever on screen): fully_preserved - face, hair and clothing stay identical. "
+           "<Audio 1>: fully_copy - the vocal is reused 1:1 as the target video's singing voice.")
+    shots = []
+    for k, t in enumerate(edges):
+        head = f"[Shot 1] {style} " if k == 0 else f"[Shot {k + 1}] At {int(t // 60):02d}:{t % 60:06.3f}, the camera cuts to the framing of <Picture {k + 1}>. "
+        body = (f"The shot continues exactly from <Picture {k + 1}> with gentle natural motion and the same people, place and lighting. "
+                "Whenever <Subject 1>'s face is visible, the lips, jaw and breathing follow <Audio 1> syllable by syllable, "
+                "opening on held notes and closing in the pauses.")
+        if k == 0:
+            body += (f" <Subject 1> (S1) sings: <d>[Chinese] {lyr}</d>" if lyr else " <Subject 1> (S1) hums softly with <Audio 1>.")
+            if len(edges) > 1:
+                body += " <scenetrans> The singing continues seamlessly across the cuts."
+        shots.append(head + body)
+    others = [c for c in sc.get("chars", []) if c != who and re.search(r"(man|woman|girl|boy|child|person|people)", chars.get(c, ""))]
+    if others:
+        shots.append("Any other visible face (" + ", ".join(others) + ") keeps its lips completely closed.")
+    shots.append(cfg.get("negative", "No text, subtitles, logos or watermarks."))
+    return ("subject_definitions: " + sd + "\n\nsummary: " + summary + "\n\nretention_analysis: " + ra +
+            "\n\ndetailed_description: " + " ".join(shots) +
+            "\n\noverall_soundscape: Only the singing of <Audio 1> over soft room tone; no other voices." +
+            "\n\nnon_diegetic_music: N/A")
 
 
 # ---------------------------------------------------------------- 素材
@@ -324,6 +367,8 @@ def main():
     ap.add_argument("--clips", default=None)
     ap.add_argument("--prompts", default=None)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--format", choices=["classic", "h3"], default="classic", help="對嘴提示詞格式（h3 = MiniMax 官方 Ref2VA 六段式，測試中）")
+    ap.add_argument("--singer", default=None, help="唱歌的角色名稱（分鏡設定.json characters 裡的鍵，例如 \"the man\"）")
     a = ap.parse_args()
 
     P = os.path.abspath(a.project)
@@ -336,6 +381,8 @@ def main():
     if len(ids) > 10:
         sys.exit("一次最多 10 段，請分批產生")
     folder = plan.get("output_folder") or "mv"
+    if a.clips:  # 例如高畫質版 output/<資料夾>_hq → 對嘴存到 <資料夾>_hq_lipsync
+        folder = os.path.basename(os.path.normpath(a.clips))
     title = plan.get("song", "MV")
     k = len(ids)
 
@@ -379,7 +426,8 @@ def main():
     for i, an in zip(ids, anchors):
         cuts_sec = sorted({n / FPS for n, _ in an[1:] if n > 0})
         prompts.append(custom.get(str(i)) or cfg.get("shots", {}).get(str(i), {}).get("lipsync_prompt")
-                       or lipsync_prompt(byid[i], cuts_sec, bool(face_name)))
+                       or (lipsync_prompt_h3(byid[i], cuts_sec, cfg, a.singer, bool(face_name)) if a.format == "h3"
+                           else lipsync_prompt(byid[i], cuts_sec, bool(face_name))))
 
     def piecewise(vals, fmt=str):
         return " + ".join(f"(a == {n}) * {fmt(v)}" for n, v in enumerate(vals, 1))
